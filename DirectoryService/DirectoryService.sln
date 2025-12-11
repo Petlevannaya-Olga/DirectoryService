@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectoryService.Domain", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{228A053C-8D62-4075-948A-049C9CAC36BC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectoryService.Presentation", "src\DirectoryService.Presentation\DirectoryService.Presentation.csproj", "{AF3213FA-F6E0-4FA8-992B-C1A9B0F6832B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,8 +16,13 @@ Global
 		{A415B110-3030-4904-AF94-45BD38C99446}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A415B110-3030-4904-AF94-45BD38C99446}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A415B110-3030-4904-AF94-45BD38C99446}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF3213FA-F6E0-4FA8-992B-C1A9B0F6832B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF3213FA-F6E0-4FA8-992B-C1A9B0F6832B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF3213FA-F6E0-4FA8-992B-C1A9B0F6832B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF3213FA-F6E0-4FA8-992B-C1A9B0F6832B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A415B110-3030-4904-AF94-45BD38C99446} = {228A053C-8D62-4075-948A-049C9CAC36BC}
+		{AF3213FA-F6E0-4FA8-992B-C1A9B0F6832B} = {228A053C-8D62-4075-948A-049C9CAC36BC}
 	EndGlobalSection
 EndGlobal
