@@ -1,8 +1,5 @@
 ﻿#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
-using CSharpFunctionalExtensions;
-using Primitives;
-
 namespace DirectoryService.Domain.Positions;
 
 public class Position
@@ -44,16 +41,13 @@ public class Position
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
 
-    // EF Core
-    private Position() { }
-
     /// <summary>
     /// Конструктор с параметрами
     /// </summary>
     /// <param name="name">Название</param>
     /// <param name="description">Описание</param>
     /// <param name="departments">Список подразделений</param>
-    private Position(
+    public Position(
         PositionName name,
         Description description,
         IEnumerable<DepartmentPosition> departments)
@@ -67,18 +61,6 @@ public class Position
         _departments = departments.ToList();
     }
 
-    /// <summary>
-    /// Фабричный метод
-    /// </summary>
-    /// <param name="name">Название</param>
-    /// <param name="description">Описание</param>
-    /// <param name="departments">Список подразделений</param>
-    /// <returns>Новая позиция</returns>
-    public static Result<Position, Error> Create(
-        PositionName name,
-        Description description,
-        IEnumerable<DepartmentPosition> departments)
-    {
-        return new Position(name, description, departments);
-    }
+    // EF Core
+    private Position() { }
 }

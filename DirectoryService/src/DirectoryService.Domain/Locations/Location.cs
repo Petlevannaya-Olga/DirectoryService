@@ -1,8 +1,5 @@
 ﻿#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
-using CSharpFunctionalExtensions;
-using Primitives;
-
 namespace DirectoryService.Domain.Locations;
 
 public class Location
@@ -50,18 +47,13 @@ public class Location
     public DateTime UpdatedAt { get; private set; }
 
     /// <summary>
-    /// Конструктор без параметров, EF Core
-    /// </summary>
-    private Location() { }
-
-    /// <summary>
     /// Конструктор с параметрами
     /// </summary>
     /// <param name="name">Название</param>
     /// <param name="address">Адрес</param>
     /// <param name="timezone">Код временной зоны</param>
     /// <param name="departments">Список подразделений</param>
-    private Location(
+    public Location(
         LocationName name,
         Address address,
         Timezone timezone,
@@ -78,19 +70,7 @@ public class Location
     }
 
     /// <summary>
-    /// Фабричный метод
+    /// Конструктор без параметров, EF Core
     /// </summary>
-    /// <param name="name">Название</param>
-    /// <param name="address">Адрес</param>
-    /// <param name="timezone">Код временной зоны</param>
-    /// <param name="departments">Список подразделений</param>
-    /// <returns>Новая локация</returns>
-    public static Result<Location, Error> Create(
-        LocationName name,
-        Address address,
-        Timezone timezone,
-        IEnumerable<DepartmentLocation> departments)
-    {
-        return new Location(name, address, timezone, departments);
-    }
+    private Location() { }
 }

@@ -9,7 +9,7 @@ public class LocationName(string value) : ValueObject
     /// Минимальное значение длины строк
     /// </summary>
     private const int MIN_LENGTH = 3;
-    
+
     /// <summary>
     /// Максимальное значение длины строки
     /// </summary>
