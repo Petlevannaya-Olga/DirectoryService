@@ -1,4 +1,7 @@
-﻿namespace DirectoryService.Domain;
+﻿using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Positions;
+
+namespace DirectoryService.Domain;
 
 /// <summary>
 /// Связь многие-ко-многим между подразделениями и позициями
@@ -11,9 +14,19 @@ public class DepartmentPosition
     public Guid DepartmentId { get; private set; }
 
     /// <summary>
+    /// Подразделение, навигационное свойство
+    /// </summary>
+    public Department Department { get; private set; } = null!;
+
+    /// <summary>
     /// Идентификатор позиции
     /// </summary>
     public Guid PositionId { get; private set; }
+
+    /// <summary>
+    /// Позиция, навигационное свойство
+    /// </summary>
+    public Position Position { get; private set; } = null!;
 
     /// <summary>
     /// Конструктор с параметрами

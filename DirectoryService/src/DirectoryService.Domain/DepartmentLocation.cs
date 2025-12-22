@@ -1,4 +1,7 @@
-﻿namespace DirectoryService.Domain;
+﻿using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Locations;
+
+namespace DirectoryService.Domain;
 
 /// <summary>
 /// Связь многие-ко-многим между подразделениями и локациями
@@ -11,9 +14,19 @@ public class DepartmentLocation
     public Guid DepartmentId { get; private set; }
 
     /// <summary>
+    /// Подразделение, навигационное свойство
+    /// </summary>
+    public Department Department { get; private set; } = null!;
+
+    /// <summary>
     /// Идентификатор локации
     /// </summary>
     public Guid LocationId { get; private set; }
+
+    /// <summary>
+    /// Локация, навигационное свойство
+    /// </summary>
+    public Location Location { get; private set; } = null!;
 
     /// <summary>
     /// Конструктор с параметрами
