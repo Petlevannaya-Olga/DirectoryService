@@ -4,8 +4,6 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
-//builder.Services.AddScoped<ApplicationDbContext>(_ =>
-//    new ApplicationDbContext(builder.Configuration.GetConnectionString("DirectoryService")!));
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(
