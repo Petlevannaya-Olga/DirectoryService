@@ -14,6 +14,10 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.HasKey(x => x.Id);
 
         builder
+            .Property(x => x.Id)
+            .HasColumnName("id");
+
+        builder
             .Property(x => x.Name)
             .HasMaxLength(LengthConstants.LENGTH_120)
             .IsRequired()

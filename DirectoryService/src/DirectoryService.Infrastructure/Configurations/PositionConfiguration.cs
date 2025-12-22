@@ -14,6 +14,10 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
         builder.HasKey(x => x.Id);
 
         builder
+            .Property(x => x.Id)
+            .HasColumnName("id");
+
+        builder
             .Property(x => x.Name)
             .HasMaxLength(LengthConstants.LENGTH_100)
             .IsRequired()
