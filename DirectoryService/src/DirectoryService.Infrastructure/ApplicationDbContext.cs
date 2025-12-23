@@ -2,6 +2,7 @@
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Positions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Infrastructure;
 
@@ -23,6 +24,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         optionsBuilder.EnableDetailedErrors();
         optionsBuilder.EnableSensitiveDataLogging();
-        optionsBuilder.LogTo(Console.WriteLine);
+        optionsBuilder.UseLoggerFactory(CreateLoggerFactory());
     }
+
+    private ILoggerFactory CreateLoggerFactory() =>
+        LoggerFactory.Create(builder => builder.AddConsole());
 }
