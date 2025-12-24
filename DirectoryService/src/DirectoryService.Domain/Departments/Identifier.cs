@@ -65,7 +65,8 @@ public partial class Identifier(string value) : ValueObject
         {
             return new Error(
                 $"{identifier}.is.wrong.identifier.format",
-                $"Идентификатор {identifier} должен содержать только латинские символы");
+                $"Идентификатор {identifier} должен содержать только латинские символы",
+                ErrorType.VALIDATION);
         }
     }
 }

@@ -51,7 +51,8 @@ public class Description(string value) : ValueObject
         {
             return new Error(
                 $"{nameof(Value).ToLowerInvariant()}.is.too.large",
-                $"Длина описания превышает {MAX_LENGTH} символов");
+                $"Длина описания превышает {MAX_LENGTH} символов",
+                ErrorType.VALIDATION);
         }
     }
 }

@@ -47,7 +47,8 @@ public class Timezone(string value) : ValueObject
         {
             return new Error(
                 $"{timezone}.is.wrong.timezone.format",
-                $"Неверно задан код временной зоны: {timezone}");
+                $"Неверно задан код временной зоны: {timezone}",
+                ErrorType.VALIDATION);
         }
     }
 }
