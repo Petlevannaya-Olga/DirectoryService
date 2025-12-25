@@ -88,12 +88,12 @@ public class Address(
 
         if (house < 1)
         {
-            return Errors.WrongNumber(house);
+            return Errors.WrongNumber(house, nameof(House));
         }
 
         if (apartment is < 1)
         {
-            return Errors.WrongNumber(apartment.Value);
+            return Errors.WrongNumber(apartment.Value, nameof(Apartment));
         }
 
         return new Address(postalCode, region, city, street, house, apartment);
@@ -123,15 +123,17 @@ public class Address(
             return new Error(
                 $"{postalCode}.is.wrong.postal.code.length",
                 $"Неверно задан индекс: {postalCode}",
-                ErrorType.VALIDATION);
+                ErrorType.VALIDATION,
+                nameof(PostalCode));
         }
 
-        public static Error WrongNumber(int number)
+        public static Error WrongNumber(int number, string invalidField)
         {
             return new Error(
                 $"{number}.is.wrong.number",
                 $"Номер должен быть больше нуля:  {number}",
-                ErrorType.VALIDATION);
+                ErrorType.VALIDATION,
+                invalidField);
         }
     }
 }
