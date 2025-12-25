@@ -2,6 +2,7 @@
 using DirectoryService.Domain.Departments;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Primitives;
 using Path = DirectoryService.Domain.Departments.Path;
 
 namespace DirectoryService.Infrastructure.Configurations;

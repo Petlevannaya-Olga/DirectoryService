@@ -2,6 +2,7 @@
 using DirectoryService.Domain.Positions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Primitives;
 
 namespace DirectoryService.Infrastructure.Configurations;
 

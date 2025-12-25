@@ -1,4 +1,6 @@
 ﻿using FluentValidation;
+using Primitives;
+using Primitives.Extensions;
 
 namespace DirectoryService.Application.Locations.CreateLocationCommand;
 
@@ -8,40 +10,43 @@ public class CreateLocationValidator : AbstractValidator<CreateLocationCommand>
     {
         RuleFor(x => x.Dto.Name)
             .NotEmpty()
-            .WithMessage("Название не может быть пустым")
+            .WithError(CommonErrors.IsRequired("name"))
             .MinimumLength(3)
-            .WithMessage("Название должно быть длиной не менее 3-х символов")
+            .WithError(CommonErrors.LengthIsTooShort("name", 3))
             .MaximumLength(150)
-            .WithMessage("Название не должно превышать 150 символов");
+            .WithError(CommonErrors.LengthIsTooLarge("name", 150));
 
         RuleFor(x => x.Dto.Timezone)
             .NotEmpty()
-            .WithMessage("Временная зона не может быть пустой");
+            .WithError(CommonErrors.IsRequired("timezone"));
 
         RuleFor(x => x.Dto.Address)
             .NotNull()
-            .WithMessage("Адрес должен быть указан");
+            .WithError(CommonErrors.IsRequired("address"));
 
         RuleFor(x => x.Dto.Address.PostalCode)
             .NotEmpty()
-            .WithMessage("Индекс не может быть пустым")
+            .WithError(CommonErrors.IsRequired("postalCode"))
             .Length(6)
-            .WithMessage("Длина индекса должна быть равна 6");
+            .WithError(CommonErrors.Validation(
+                "postal.code.length.is.invalid",
+                "Длина индекса должна быть равна 6",
+                "postalCode"));
 
         RuleFor(x => x.Dto.Address.Region)
             .NotEmpty()
-            .WithMessage("Регион не  может быть пустым");
+            .WithError(CommonErrors.IsRequired("region"));
 
         RuleFor(x => x.Dto.Address.City)
             .NotEmpty()
-            .WithMessage("Город не может быть пустым");
+            .WithError(CommonErrors.IsRequired("city"));
 
         RuleFor(x => x.Dto.Address.Street)
             .NotEmpty()
-            .WithMessage("Улица не может быть пустой");
+            .WithError(CommonErrors.IsRequired("street"));
 
         RuleFor(x => x.Dto.Address.House)
             .GreaterThan(0)
-            .WithMessage("Номер дома должен быть положительным числом");
+            .WithError(CommonErrors.MustBePositive("house"));
     }
 }
