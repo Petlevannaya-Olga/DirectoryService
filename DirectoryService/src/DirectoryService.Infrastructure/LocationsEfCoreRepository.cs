@@ -3,7 +3,7 @@ using DirectoryService.Domain.Locations;
 
 namespace DirectoryService.Infrastructure;
 
-public class LocationEfCoreRepository(ApplicationDbContext dbContext) : ILocationsRepository
+public class LocationsEfCoreRepository(ApplicationDbContext dbContext) : ILocationsRepository
 {
     public async Task<Guid> AddAsync(Location question, CancellationToken cancellationToken)
     {

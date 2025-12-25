@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using DirectoryService.Application;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.Infrastructure;
 
@@ -6,6 +7,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
+        services.AddScoped<ILocationsRepository, LocationsEfCoreRepository>();
         return services;
     }
 }
