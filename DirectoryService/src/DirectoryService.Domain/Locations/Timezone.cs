@@ -21,7 +21,7 @@ public class Timezone(string value) : ValueObject
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            return CommonErrors.ValueIsRequired(nameof(name));
+            return CommonErrors.IsRequired(nameof(name));
         }
 
         if (TZConvert.KnownIanaTimeZoneNames.Contains(name) is false)

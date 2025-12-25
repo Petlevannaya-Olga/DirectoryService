@@ -2,11 +2,11 @@
 
 public static class CommonErrors
 {
-    public static Error ValueIsRequired(string value) =>
+    public static Error IsRequired(string value) =>
         new($"{nameof(value).ToLowerInvariant()}.is.required", $"Значение не задано для {value}",
             ErrorType.VALIDATION);
 
-    public static Error ValueLengthIsWrong(string value, int minLength, int maxLength)
+    public static Error LengthIsWrong(string value, int minLength, int maxLength)
         => new(
             $"{nameof(value).ToLowerInvariant()}.length.is.wrong",
             $"Значение должно быть длиной от {minLength} до {maxLength} символов для {value}",

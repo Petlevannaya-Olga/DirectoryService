@@ -1,9 +1,10 @@
 using DirectoryService.Infrastructure;
+using DirectoryService.Presentation;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi();
+builder.Services.AddProgramDependencies();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(

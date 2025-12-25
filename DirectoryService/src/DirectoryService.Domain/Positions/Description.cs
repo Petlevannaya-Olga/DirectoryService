@@ -25,7 +25,7 @@ public class Description(string value) : ValueObject
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            return CommonErrors.ValueIsRequired(nameof(name));
+            return CommonErrors.IsRequired(nameof(name));
         }
 
         if (name.Length >= MAX_LENGTH)

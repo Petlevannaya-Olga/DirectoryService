@@ -27,7 +27,6 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder
             .Property(x => x.Address)
             .IsRequired()
-            .HasConversion(x => x.Value, name => new Address(name))
             .HasColumnName("address")
             .HasColumnType("jsonb");
 

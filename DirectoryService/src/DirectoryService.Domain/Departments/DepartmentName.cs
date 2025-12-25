@@ -29,12 +29,12 @@ public class DepartmentName(string value) : ValueObject
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            return CommonErrors.ValueIsRequired(nameof(name));
+            return CommonErrors.IsRequired(nameof(name));
         }
 
         if (name.Length is < MIN_LENGTH or > MAX_LENGTH)
         {
-            return CommonErrors.ValueLengthIsWrong(nameof(name), MIN_LENGTH, MAX_LENGTH);
+            return CommonErrors.LengthIsWrong(nameof(name), MIN_LENGTH, MAX_LENGTH);
         }
 
         return new DepartmentName(name.Trim());
