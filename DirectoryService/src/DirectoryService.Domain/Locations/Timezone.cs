@@ -21,7 +21,7 @@ public class Timezone(string value) : ValueObject
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            return CommonErrors.ValueIsRequired(nameof(name));
+            return CommonErrors.IsRequired(nameof(name));
         }
 
         if (TZConvert.KnownIanaTimeZoneNames.Contains(name) is false)
@@ -47,7 +47,9 @@ public class Timezone(string value) : ValueObject
         {
             return new Error(
                 $"{timezone}.is.wrong.timezone.format",
-                $"Неверно задан код временной зоны: {timezone}");
+                $"Неверно задан код временной зоны: {timezone}",
+                ErrorType.VALIDATION,
+                nameof(Value));
         }
     }
 }

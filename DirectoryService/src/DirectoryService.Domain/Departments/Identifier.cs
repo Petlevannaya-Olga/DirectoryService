@@ -11,7 +11,7 @@ public partial class Identifier(string value) : ValueObject
     /// Минимальное значение длины строки
     /// </summary>
     private const int MIN_LENGTH = 3;
-    
+
     /// <summary>
     /// Максимальное значение длины строки
     /// </summary>
@@ -31,12 +31,12 @@ public partial class Identifier(string value) : ValueObject
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            return CommonErrors.ValueIsRequired(nameof(name));
+            return CommonErrors.IsRequired(nameof(name));
         }
 
         if (name.Length is < MIN_LENGTH or > MAX_LENGTH)
         {
-            return CommonErrors.ValueLengthIsWrong(nameof(name), MIN_LENGTH, MAX_LENGTH);
+            return CommonErrors.LengthIsWrong(nameof(name), MIN_LENGTH, MAX_LENGTH);
         }
 
         if (LatinRegex().IsMatch(name) is false)
@@ -65,7 +65,9 @@ public partial class Identifier(string value) : ValueObject
         {
             return new Error(
                 $"{identifier}.is.wrong.identifier.format",
-                $"Идентификатор {identifier} должен содержать только латинские символы");
+                $"Идентификатор {identifier} должен содержать только латинские символы",
+                ErrorType.VALIDATION,
+                nameof(Identifier));
         }
     }
 }

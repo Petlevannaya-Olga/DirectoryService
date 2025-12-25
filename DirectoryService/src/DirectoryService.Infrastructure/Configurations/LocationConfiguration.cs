@@ -25,11 +25,16 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             .HasColumnName("name");
 
         builder
-            .Property(x => x.Address)
-            .IsRequired()
-            .HasConversion(x => x.Value, name => new Address(name))
-            .HasColumnName("address")
-            .HasColumnType("jsonb");
+            .OwnsOne(x => x.Address, b =>
+            {
+                b.ToJson("address");
+
+                b.Property(x => x.PostalCode).IsRequired();
+                b.Property(x => x.Region).IsRequired();
+                b.Property(x => x.City).IsRequired();
+                b.Property(x => x.Street).IsRequired();
+                b.Property(x => x.House).IsRequired();
+            });
 
         builder
             .Property(x => x.Timezone)

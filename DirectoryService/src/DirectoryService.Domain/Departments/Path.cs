@@ -19,7 +19,7 @@ public class Path(string value) : ValueObject
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            return CommonErrors.ValueIsRequired(nameof(name));
+            return CommonErrors.IsRequired(nameof(name));
         }
 
         return new Path(name.Trim());

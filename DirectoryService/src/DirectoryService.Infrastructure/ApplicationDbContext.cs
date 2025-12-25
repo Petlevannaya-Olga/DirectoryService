@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 namespace DirectoryService.Infrastructure;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
-
 {
     public DbSet<Department> Departments { get; set; }
 
