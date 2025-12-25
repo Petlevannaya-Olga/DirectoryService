@@ -2,7 +2,7 @@
 
 namespace Primitives;
 
-public class Failure(IEnumerable<Error> errors) : IEnumerable<Error>
+public class Errors(IEnumerable<Error> errors) : IEnumerable<Error>
 {
     private readonly List<Error> _errors = [..errors];
 
@@ -13,9 +13,9 @@ public class Failure(IEnumerable<Error> errors) : IEnumerable<Error>
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public static implicit operator Failure(Error[] errors)
+    public static implicit operator Errors(Error[] errors)
         => new(errors);
 
-    public static implicit operator Failure(Error error)
+    public static implicit operator Errors(Error error)
         => new([error]);
 }

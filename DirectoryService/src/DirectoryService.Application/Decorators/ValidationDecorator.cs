@@ -12,7 +12,7 @@ public class ValidationDecorator<TResponse, TCommand>(
     : ICommandHandler<TResponse, TCommand>
     where TCommand : IValidation
 {
-    public async Task<Result<TResponse, Failure>> Handle(TCommand command, CancellationToken cancellationToken)
+    public async Task<Result<TResponse, Errors>> Handle(TCommand command, CancellationToken cancellationToken)
     {
         if (!validators.Any())
         {

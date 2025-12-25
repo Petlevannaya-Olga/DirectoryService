@@ -1,4 +1,4 @@
-﻿namespace DirectoryService.Domain;
+﻿namespace Primitives;
 
 public readonly struct LengthConstants
 {

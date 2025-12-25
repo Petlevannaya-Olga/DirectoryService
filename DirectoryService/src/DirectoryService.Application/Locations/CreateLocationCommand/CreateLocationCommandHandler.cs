@@ -11,12 +11,12 @@ public class CreateLocationCommandHandler(
     ILocationsRepository repository)
     : ICommandHandler<Guid, CreateLocationCommand>
 {
-    public async Task<Result<Guid, Failure>> Handle(CreateLocationCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Guid, Errors>> Handle(CreateLocationCommand command, CancellationToken cancellationToken)
     {
         var locationNameCreateResult = LocationName.Create(command.Dto.Name);
         if (locationNameCreateResult.IsFailure)
         {
-            return locationNameCreateResult.Error.ToFailure();
+            return locationNameCreateResult.Error.ToErrors();
         }
 
         var addressCreateResult = Address.Create(
@@ -29,14 +29,14 @@ public class CreateLocationCommandHandler(
 
         if (addressCreateResult.IsFailure)
         {
-            return addressCreateResult.Error.ToFailure();
+            return addressCreateResult.Error.ToErrors();
         }
 
         var timezoneCreateResult = Timezone.Create(command.Dto.Timezone);
 
         if (timezoneCreateResult.IsFailure)
         {
-            return timezoneCreateResult.Error.ToFailure();
+            return timezoneCreateResult.Error.ToErrors();
         }
 
         var location = new Location(

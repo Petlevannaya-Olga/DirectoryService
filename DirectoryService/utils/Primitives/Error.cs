@@ -5,6 +5,8 @@ namespace Primitives;
 [method: JsonConstructor]
 public record Error(string Code, string Message, ErrorType Type, string? InvalidField = null)
 {
+    private const string SEPARATOR = "||";
+
     /// <summary>
     /// Код ошибки
     /// </summary>
@@ -26,7 +28,24 @@ public record Error(string Code, string Message, ErrorType Type, string? Invalid
     /// </summary>
     public string? InvalidField { get; } = InvalidField;
 
-    public Failure ToFailure() => this;
+    public Errors ToErrors() => this;
+
+    public string Serialize()
+    {
+        return string.Join(SEPARATOR, Code, Message, Type);
+    }
+
+    public static Error Deserialize(string json)
+    {
+        string[] parts = json.Split(SEPARATOR);
+
+        if (parts.Length != 3 || !Enum.TryParse(parts[2], out ErrorType errorType))
+        {
+            throw new ArgumentException("Invalid string format");
+        }
+
+        return new Error(parts[0], parts[1], errorType);
+    }
 }
 
 public enum ErrorType
