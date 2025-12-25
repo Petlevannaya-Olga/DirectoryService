@@ -1,8 +1,10 @@
-﻿using DirectoryService.Domain.Locations;
+﻿using CSharpFunctionalExtensions;
+using DirectoryService.Domain.Locations;
+using Primitives;
 
 namespace DirectoryService.Application;
 
 public interface ILocationsRepository
 {
-    Task<Guid> AddAsync(Location question, CancellationToken cancellationToken);
+    Task<Result<Guid, Error>> AddAsync(Location question, CancellationToken cancellationToken);
 }

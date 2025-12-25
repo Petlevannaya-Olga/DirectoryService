@@ -9,10 +9,7 @@ public static class ResponseExtensions
     {
         if (!failure.Any())
         {
-            return new ObjectResult(null)
-            {
-                StatusCode = StatusCodes.Status500InternalServerError,
-            };
+            return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError, };
         }
 
         var distinctErrorTypes = failure
@@ -24,10 +21,7 @@ public static class ResponseExtensions
             ? StatusCodes.Status500InternalServerError
             : GetStatusCodeFromErrorType(distinctErrorTypes.First());
 
-        return new ObjectResult(failure)
-        {
-            StatusCode = statusCode,
-        };
+        return new ObjectResult(failure) { StatusCode = statusCode, };
     }
 
     private static int GetStatusCodeFromErrorType(ErrorType errorType) =>
@@ -36,6 +30,6 @@ public static class ResponseExtensions
             ErrorType.VALIDATION => StatusCodes.Status400BadRequest,
             ErrorType.NOT_FOUND => StatusCodes.Status404NotFound,
             ErrorType.CONFLICT => StatusCodes.Status409Conflict,
-            _ => StatusCodes.Status500InternalServerError
+            _ => StatusCodes.Status500InternalServerError,
         };
 }
