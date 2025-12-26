@@ -74,4 +74,9 @@ public enum ErrorType
     /// Конфликт
     /// </summary>
     CONFLICT,
+
+    /// <summary>
+    /// Ошибка базы данных
+    /// </summary>
+    DB,
 }

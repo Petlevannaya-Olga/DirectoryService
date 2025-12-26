@@ -1,15 +1,17 @@
-﻿#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+﻿using DirectoryService.Domain.DepartmentPositions;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 namespace DirectoryService.Domain.Positions;
 
-public class Position
+public sealed class Position
 {
-    private readonly List<DepartmentPosition> _departments;
+    private readonly List<DepartmentPosition> _departmentPositions;
 
     /// <summary>
     /// Идентификатор, PK
     /// </summary>
-    public Guid Id { get; private set; }
+    public PositionId Id { get; private set; }
 
     /// <summary>
     /// Название
@@ -24,7 +26,7 @@ public class Position
     /// <summary>
     /// Список подразделений
     /// </summary>
-    public IReadOnlyList<DepartmentPosition> Departments => _departments;
+    public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions;
 
     /// <summary>
     /// Для soft delete
@@ -52,13 +54,13 @@ public class Position
         Description description,
         IEnumerable<DepartmentPosition> departments)
     {
-        Id = Guid.NewGuid();
+        Id = new PositionId(Guid.NewGuid());
         Name = name;
         Description = description;
         IsActive = true;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
-        _departments = departments.ToList();
+        _departmentPositions = departments.ToList();
     }
 
     // EF Core

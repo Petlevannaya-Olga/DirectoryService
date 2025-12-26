@@ -3,7 +3,7 @@ using Primitives;
 
 namespace DirectoryService.Domain.Positions;
 
-public class PositionName(string value) : ValueObject
+public sealed class PositionName(string value) : ValueObject
 {
     /// <summary>
     /// Минимальное значение длины строки

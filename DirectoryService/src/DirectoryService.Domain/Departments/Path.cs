@@ -3,26 +3,41 @@ using Primitives;
 
 namespace DirectoryService.Domain.Departments;
 
-public class Path(string value) : ValueObject
+public sealed class Path : ValueObject
 {
+    /// <summary>
+    /// Разделитель
+    /// </summary>
+    private const char SEPARATOR = '/';
+
     /// <summary>
     /// Значение
     /// </summary>
-    public string Value { get; private set; } = value;
+    public string Value { get; private set; }
+
+    private Path(string value)
+    {
+        Value = value;
+    }
 
     /// <summary>
-    /// Фабричный метод
+    /// Путь к родительскому подразделению
     /// </summary>
-    /// <param name="name">Название</param>
+    /// <param name="identifier">Идентификатор родительского подразделения</param>
     /// <returns>Новый путь</returns>
-    public static Result<Path, Error> Create(string name)
+    public static Path CreateParent(Identifier identifier)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return CommonErrors.IsRequired(nameof(name));
-        }
+        return new Path(identifier.Value);
+    }
 
-        return new Path(name.Trim());
+    /// <summary>
+    /// Путь к дочернему подразделению
+    /// </summary>
+    /// <param name="identifier">Идентификатор дочернего подразделения</param>
+    /// <returns>Новый путь</returns>
+    public Path CreateChild(Identifier identifier)
+    {
+        return new Path(Value + SEPARATOR + identifier.Value);
     }
 
     protected override IEnumerable<object> GetEqualityComponents()

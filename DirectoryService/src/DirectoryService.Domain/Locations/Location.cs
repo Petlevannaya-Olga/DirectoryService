@@ -1,15 +1,17 @@
-﻿#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+﻿using DirectoryService.Domain.DepartmentLocations;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 namespace DirectoryService.Domain.Locations;
 
-public class Location
+public sealed class Location
 {
-    private readonly List<DepartmentLocation> _departments = [];
+    private readonly List<DepartmentLocation> _departmentLocations = [];
 
     /// <summary>
     /// Идентификатор, PK
     /// </summary>
-    public Guid Id { get; private set; }
+    public LocationId Id { get; private set; }
 
     /// <summary>
     /// Название, UNIQUE, 3–120 симв.
@@ -29,7 +31,7 @@ public class Location
     /// <summary>
     /// Список департаментов
     /// </summary>
-    public IReadOnlyList<DepartmentLocation> Departments => _departments;
+    public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations;
 
     /// <summary>
     /// Для soft delete
@@ -59,14 +61,14 @@ public class Location
         Timezone timezone,
         IEnumerable<DepartmentLocation> departments)
     {
-        Id = Guid.NewGuid();
+        Id = new LocationId(Guid.NewGuid());
         Name = name;
         Address = address;
         Timezone = timezone;
         IsActive = false;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
-        _departments = departments.ToList();
+        _departmentLocations = departments.ToList();
     }
 
     /// <summary>

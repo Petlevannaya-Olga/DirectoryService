@@ -17,37 +17,48 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
 
         builder
             .Property(x => x.Id)
-            .HasColumnName("id");
+            .HasColumnName("id")
+            .HasConversion(x => x.Value, name => new DepartmentId(name));
 
-        builder
-            .Property(x => x.Name)
-            .IsRequired()
-            .HasMaxLength(LengthConstants.LENGTH_150)
-            .HasConversion(x => x.Value, name => new DepartmentName(name))
-            .HasColumnName("name");
+        builder.ComplexProperty(x => x.Name, config =>
+        {
+            config.Property(x => x.Value)
+                .HasColumnName("name")
+                .HasMaxLength(LengthConstants.LENGTH_150)
+                .IsRequired();
+        });
 
-        builder
-            .Property(x => x.Identifier)
-            .IsRequired()
-            .HasMaxLength(LengthConstants.LENGTH_150)
-            .HasConversion(x => x.Value, name => new Identifier(name))
-            .HasColumnName("identifier");
+
+        builder.ComplexProperty(x => x.Identifier, config =>
+        {
+            config.Property(x => x.Value)
+                .HasColumnName("identifier")
+                .HasMaxLength(LengthConstants.LENGTH_150)
+                .IsRequired();
+        });
 
         builder
             .Property(x => x.ParentId)
             .IsRequired(false)
+            .HasConversion(x => x!.Value, name => new DepartmentId(name))
             .HasColumnName("parent_id");
 
-        builder
-            .Property(x => x.Path)
-            .IsRequired()
-            .HasConversion(x => x.Value, name => new Path(name))
-            .HasColumnName("path");
+        builder.ComplexProperty(x => x.Path, config =>
+        {
+            config.Property(x => x.Value)
+                .HasColumnName("path")
+                .IsRequired();
+        });
 
         builder
             .Property(x => x.Depth)
             .IsRequired()
             .HasColumnName("depth");
+
+        builder
+            .Property(x => x.ChildrenCount)
+            .IsRequired()
+            .HasColumnName("children_count");
 
         builder
             .Property(x => x.IsActive)
@@ -65,9 +76,21 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .HasColumnName("updated_at");
 
         builder
-            .HasOne<Department>()
-            .WithMany()
+            .HasMany(x => x.ChildrenDepartments)
+            .WithOne()
             .HasForeignKey(x => x.ParentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasMany(x => x.DepartmentLocations)
+            .WithOne()
+            .HasForeignKey(x => x.DepartmentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasMany(x => x.DepartmentPositions)
+            .WithOne()
+            .HasForeignKey(x => x.DepartmentId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

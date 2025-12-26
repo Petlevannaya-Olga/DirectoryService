@@ -45,10 +45,15 @@ public class CreateLocationCommandHandler(
             timezoneCreateResult.Value,
             []);
 
-        await repository.AddAsync(location, cancellationToken);
+        var addResult = await repository.AddAsync(location, cancellationToken);
+
+        if (addResult.IsFailure)
+        {
+            return addResult.Error.ToErrors();
+        }
 
         logger.LogInformation("Создана локация с id = {locationId}", location.Id);
 
-        return location.Id;
+        return location.Id.Value;
     }
 }

@@ -5,7 +5,7 @@ using TimeZoneConverter;
 
 namespace DirectoryService.Domain.Locations;
 
-public class Timezone(string value) : ValueObject
+public sealed class Timezone(string value) : ValueObject
 {
     /// <summary>
     /// Значение

@@ -16,21 +16,26 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
 
         builder
             .Property(x => x.Id)
-            .HasColumnName("id");
+            .HasColumnName("id")
+            .HasConversion(x => x.Value, name => new PositionId(name));
 
         builder
-            .Property(x => x.Name)
-            .HasMaxLength(LengthConstants.LENGTH_100)
-            .IsRequired()
-            .HasConversion(x => x.Value, name => new PositionName(name))
-            .HasColumnName("name");
+            .ComplexProperty(x => x.Name, config =>
+            {
+                config.Property(x => x.Value)
+                    .HasMaxLength(LengthConstants.LENGTH_100)
+                    .IsRequired()
+                    .HasColumnName("name");
+            });
 
         builder
-            .Property(x => x.Description)
-            .HasMaxLength(LengthConstants.LENGTH_1000)
-            .IsRequired()
-            .HasConversion(x => x.Value, name => new Description(name))
-            .HasColumnName("description");
+            .ComplexProperty(x => x.Description, config =>
+            {
+                config.Property(x => x.Value)
+                    .HasMaxLength(LengthConstants.LENGTH_1000)
+                    .IsRequired()
+                    .HasColumnName("description");
+            });
 
         builder
             .Property(x => x.IsActive)
