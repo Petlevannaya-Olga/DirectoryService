@@ -1,44 +1,40 @@
 ﻿using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 
-namespace DirectoryService.Domain;
+namespace DirectoryService.Domain.DepartmentLocations;
 
 /// <summary>
 /// Связь многие-ко-многим между подразделениями и локациями
 /// </summary>
-public class DepartmentLocation
+public sealed class DepartmentLocation
 {
+    /// <summary>
+    /// Идентификатор
+    /// </summary>
+    public DepartmentLocationsId Id { get; private set; }
+
     /// <summary>
     /// Идентификатор подразделения
     /// </summary>
-    public Guid DepartmentId { get; private set; }
-
-    /// <summary>
-    /// Подразделение, навигационное свойство
-    /// </summary>
-    public Department Department { get; private set; } = null!;
+    public DepartmentId DepartmentId { get; private set; }
 
     /// <summary>
     /// Идентификатор локации
     /// </summary>
-    public Guid LocationId { get; private set; }
-
-    /// <summary>
-    /// Локация, навигационное свойство
-    /// </summary>
-    public Location Location { get; private set; } = null!;
+    public LocationId LocationId { get; private set; }
 
     /// <summary>
     /// Конструктор с параметрами
     /// </summary>
     /// <param name="departmentId">Идентификатор подразделения</param>
     /// <param name="locationId">Идентификатор локации</param>
-    public DepartmentLocation(Guid departmentId, Guid locationId)
+    public DepartmentLocation(DepartmentId departmentId, LocationId locationId)
     {
+        Id = new DepartmentLocationsId(Guid.NewGuid());
         DepartmentId = departmentId;
         LocationId = locationId;
     }
-
-    // EF Core
+    
+    // Ef Core
     private DepartmentLocation() { }
 }

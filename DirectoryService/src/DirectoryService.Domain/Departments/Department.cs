@@ -1,19 +1,22 @@
 ﻿#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 using CSharpFunctionalExtensions;
+using DirectoryService.Domain.DepartmentLocations;
+using DirectoryService.Domain.DepartmentPositions;
 using Primitives;
 
 namespace DirectoryService.Domain.Departments;
 
-public class Department
+public sealed class Department
 {
-    private readonly List<DepartmentLocation> _locations = [];
-    private readonly List<DepartmentPosition> _positions = [];
+    private readonly List<Department> _childrenDepartments = [];
+    private readonly List<DepartmentLocation> _departmentLocations = [];
+    private readonly List<DepartmentPosition> _departmentPositions = [];
 
     /// <summary>
     /// Идентификатор, PK
     /// </summary>
-    public Guid Id { get; private set; }
+    public DepartmentId Id { get; private set; }
 
     /// <summary>
     /// Название, 3–150 симв., NOT NULL
@@ -28,7 +31,7 @@ public class Department
     /// <summary>
     /// Головное подразделение
     /// </summary>
-    public Guid? ParentId { get; private set; }
+    public DepartmentId? ParentId { get; private set; }
 
     /// <summary>
     /// Денормализованный путь (например, sales.it.dev-team)
@@ -43,12 +46,22 @@ public class Department
     /// <summary>
     /// Список локаций
     /// </summary>
-    public IReadOnlyList<DepartmentLocation> Locations => _locations;
+    public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations;
 
     /// <summary>
     /// Список подразделений
     /// </summary>
-    public IReadOnlyList<DepartmentPosition> Positions => _positions;
+    public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions;
+
+    /// <summary>
+    /// Список дочерних подразделений
+    /// </summary>
+    public IReadOnlyList<Department> ChildrenDepartments => _childrenDepartments;
+
+    /// <summary>
+    /// Количество дочерних подразделений
+    /// </summary>
+    public int ChildrenCount => _childrenDepartments.Count;
 
     /// <summary>
     /// Для soft delete
@@ -78,17 +91,16 @@ public class Department
     /// <param name="parentId">Ссылка на родительский элемент</param>
     /// <param name="path">Денормализованный путь</param>
     /// <param name="depth">Глубина подразделения</param>
-    /// <param name="locations">Список локаций</param>
-    /// <param name="positions">Список позиций</param>
+    /// <param name="departmentLocations">Список локаций</param>
     private Department(
         DepartmentName name,
         Identifier identifier,
-        Guid? parentId,
+        DepartmentId? parentId,
         Path path,
         short depth,
-        IEnumerable<DepartmentLocation> locations,
-        IEnumerable<DepartmentPosition> positions)
+        IEnumerable<DepartmentLocation> departmentLocations)
     {
+        Id = new DepartmentId(Guid.NewGuid());
         Name = name;
         Identifier = identifier;
         ParentId = parentId;
@@ -97,30 +109,65 @@ public class Department
         IsActive = true;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
-        _locations = locations.ToList();
-        _positions = positions.ToList();
+        _departmentLocations = departmentLocations.ToList();
     }
 
     /// <summary>
-    /// Фабричный метод
+    /// Создание родительского подразделения
     /// </summary>
     /// <param name="name">Название</param>
     /// <param name="identifier">Идентификатор</param>
-    /// <param name="parentId">Ссылка на родительский элемент</param>
-    /// <param name="path">Денормализованный путь</param>
-    /// <param name="depth">Глубина подразделения</param>
-    /// <param name="locations">Список локаций</param>
-    /// <param name="positions">Список позиций</param>
+    /// <param name="departmentLocations">Список локаций</param>
     /// <returns>Новое подразделение</returns>
-    public static Result<Department, Error> Create(
+    public static Result<Department, Error> CreateParent(
         DepartmentName name,
         Identifier identifier,
-        Guid? parentId,
-        Path path,
-        short depth,
-        IEnumerable<DepartmentLocation> locations,
-        IEnumerable<DepartmentPosition> positions)
+        IEnumerable<DepartmentLocation> departmentLocations)
     {
-        return new Department(name, identifier, parentId, path, depth, locations, positions);
+        var list = departmentLocations.ToList();
+
+        if (list.Count == 0)
+        {
+            return CommonErrors.Validation(
+                "department.location",
+                "Должна быть добавлена минимум одна локация");
+        }
+
+        var path = Path.CreateParent(identifier);
+        return new Department(name, identifier, null, path, 0, list);
+    }
+
+    /// <summary>
+    /// Создание дочернего подразделения
+    /// </summary>
+    /// <param name="name">Название</param>
+    /// <param name="identifier">Идентификатор</param>
+    /// <param name="parent">Родительское подразделение</param>
+    /// <param name="departmentLocations">Список локаций</param>
+    /// <returns>Новое подразделение</returns>
+    public static Result<Department, Error> CreateChild(
+        DepartmentName name,
+        Identifier identifier,
+        Department parent,
+        IEnumerable<DepartmentLocation> departmentLocations)
+    {
+        var list = departmentLocations.ToList();
+
+        if (list.Count == 0)
+        {
+            return CommonErrors.Validation(
+                "department.location",
+                "Должна быть добавлена минимум одна локация");
+        }
+
+        var path = parent.Path.CreateChild(identifier);
+
+        return new Department(
+            name,
+            identifier,
+            parent.Id,
+            path,
+            (short)(parent.Depth + 1),
+            list);
     }
 }

@@ -13,12 +13,11 @@ public class LocationsRepository(ApplicationDbContext dbContext) : ILocationsRep
         {
             await dbContext.Locations.AddAsync(question, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
-            return question.Id;
+            return question.Id.Value;
         }
         catch (Exception e)
         {
-            return CommonErrors
-                .Failure("add.location.to.db.exception", e.Message);
+            return CommonErrors.Db("add.location.to.db.exception", e.Message);
         }
     }
 }

@@ -4,7 +4,7 @@ using Primitives;
 
 namespace DirectoryService.Domain.Positions;
 
-public class Description(string value) : ValueObject
+public sealed class Description(string value) : ValueObject
 {
     /// <summary>
     /// Максимальное значение длины строки

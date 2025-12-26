@@ -3,7 +3,7 @@ using Primitives;
 
 namespace DirectoryService.Domain.Departments;
 
-public class DepartmentName(string value) : ValueObject
+public sealed class DepartmentName : ValueObject
 {
     /// <summary>
     /// Минимальное значение длины строки
@@ -18,7 +18,12 @@ public class DepartmentName(string value) : ValueObject
     /// <summary>
     /// Значение
     /// </summary>
-    public string Value { get; private set; } = value;
+    public string Value { get; private set; }
+
+    private DepartmentName(string value)
+    {
+        Value = value;
+    }
 
     /// <summary>
     /// Фабричный метод

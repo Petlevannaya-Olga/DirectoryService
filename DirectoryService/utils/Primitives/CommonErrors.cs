@@ -50,4 +50,7 @@ public static class CommonErrors
 
     public static Error Failure(string? code, string message)
         => new(code ?? "failure", message, ErrorType.FAILURE);
+
+    public static Error Db(string? code, string message)
+        => new(code ?? "db.exception", message, ErrorType.DB);
 }

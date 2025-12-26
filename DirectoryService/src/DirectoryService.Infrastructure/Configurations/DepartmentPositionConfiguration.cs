@@ -1,4 +1,7 @@
 ﻿using DirectoryService.Domain;
+using DirectoryService.Domain.DepartmentPositions;
+using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Positions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,22 +13,24 @@ public class DepartmentPositionConfiguration : IEntityTypeConfiguration<Departme
     {
         builder.ToTable("departments_positions");
 
-        builder.HasKey(x => new { x.DepartmentId, x.PositionId });
+        builder.HasKey(x => x.Id);
+
+        builder
+            .Property(x => x.Id)
+            .IsRequired()
+            .HasColumnName("id")
+            .HasConversion(x => x.Value, name => new DepartmentPositionsId(name));
 
         builder
             .Property(x => x.PositionId)
             .IsRequired()
-            .HasColumnName("position_id");
+            .HasColumnName("position_id")
+            .HasConversion(x => x.Value, name => new PositionId(name));
 
         builder
             .Property(x => x.DepartmentId)
             .IsRequired()
-            .HasColumnName("department_id");
-
-        builder.HasOne(x => x.Position)
-            .WithMany(x => x.Departments)
-            .HasForeignKey(x => x.PositionId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasColumnName("department_id")
+            .HasConversion(x => x.Value, name => new DepartmentId(name));
     }
 }

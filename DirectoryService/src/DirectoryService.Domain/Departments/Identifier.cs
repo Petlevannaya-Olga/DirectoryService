@@ -5,7 +5,7 @@ using Primitives;
 
 namespace DirectoryService.Domain.Departments;
 
-public partial class Identifier(string value) : ValueObject
+public sealed class Identifier : ValueObject
 {
     /// <summary>
     /// Минимальное значение длины строки
@@ -17,10 +17,17 @@ public partial class Identifier(string value) : ValueObject
     /// </summary>
     private const int MAX_LENGTH = 150;
 
+    private static readonly Regex _latinRegex = new(@"^[A-Za-z]+$", RegexOptions.Compiled);
+
     /// <summary>
     /// Значение
     /// </summary>
-    public string Value { get; private set; } = value;
+    public string Value { get; private set; }
+
+    private Identifier(string value)
+    {
+        Value = value;
+    }
 
     /// <summary>
     /// Фабричный метод
@@ -39,7 +46,7 @@ public partial class Identifier(string value) : ValueObject
             return CommonErrors.LengthIsWrong(nameof(name), MIN_LENGTH, MAX_LENGTH);
         }
 
-        if (LatinRegex().IsMatch(name) is false)
+        if (!_latinRegex.IsMatch(name))
         {
             return Errors.WrongIdentifierFormat(name);
         }
@@ -51,9 +58,6 @@ public partial class Identifier(string value) : ValueObject
     {
         yield return Value;
     }
-
-    [GeneratedRegex(@"^[A-Za-z]+$")]
-    private static partial Regex LatinRegex();
 
     /// <summary>
     /// Ошибки, которые может возвращать сущность

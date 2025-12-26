@@ -3,7 +3,7 @@ using Primitives;
 
 namespace DirectoryService.Domain.Locations;
 
-public class LocationName(string value) : ValueObject
+public sealed class LocationName(string value) : ValueObject
 {
     /// <summary>
     /// Минимальное значение длины строк

@@ -4,7 +4,7 @@ using Primitives;
 
 namespace DirectoryService.Domain.Locations;
 
-public class Address(
+public sealed class Address(
     string postalCode,
     string region,
     string city,
