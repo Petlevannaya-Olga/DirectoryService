@@ -61,7 +61,7 @@ public sealed class Department
     /// <summary>
     /// Количество дочерних подразделений
     /// </summary>
-    public int ChildrenCount => _childrenDepartments.Count;
+    public int ChildrenCount { get; private set; }
 
     /// <summary>
     /// Для soft delete
@@ -110,6 +110,7 @@ public sealed class Department
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
         _departmentLocations = departmentLocations.ToList();
+        ChildrenCount = _childrenDepartments.Count;
     }
 
     /// <summary>
