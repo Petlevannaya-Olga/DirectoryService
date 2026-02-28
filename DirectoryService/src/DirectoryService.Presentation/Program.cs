@@ -1,21 +1,28 @@
-using DirectoryService.Infrastructure;
-using DirectoryService.Presentation;
-using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using DirectoryService.Presentation.Configuration;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+    .CreateBootstrapLogger();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DirectoryServiceDb")));
-
-builder.Services.AddProgramDependencies();
-
-var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
+try
 {
-    app.MapOpenApi();
-    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Directory service API"));
-}
+    Log.Information("Приложение запускается");
 
-app.MapControllers();
-app.Run();
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Services.AddProgramDependencies(builder.Configuration);
+
+    var app = builder.Build();
+    app.UseWebDependencies();
+    app.Run();
+}
+catch (Exception e)
+{
+    Log.Fatal(e, "Не удалось запустить приложение ");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
