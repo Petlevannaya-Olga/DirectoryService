@@ -1,6 +1,5 @@
 ﻿using DirectoryService.Application;
 using DirectoryService.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Primitives;
 using Serilog;
@@ -14,14 +13,11 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DirectoryServiceDb")));
-
         services
             .AddSerilogLogging(configuration)
             .AddWebDependencies()
             .AddApplication()
-            .AddInfrastructure();
+            .AddInfrastructure(configuration);
 
         return services;
     }
@@ -33,15 +29,17 @@ public static class DependencyInjection
         {
             options.AddSchemaTransformer((schema, context, _) =>
             {
-                if (context.JsonTypeInfo.Type == typeof(Envelope<Errors>))
+                if (context.JsonTypeInfo.Type != typeof(Envelope<Errors>))
                 {
-                    if (schema.Properties.TryGetValue("errors", out OpenApiSchema? errorsProperty))
+                    return Task.CompletedTask;
+                }
+
+                if (schema.Properties.TryGetValue("errors", out OpenApiSchema? errorsProperty))
+                {
+                    errorsProperty.Items.Reference = new OpenApiReference
                     {
-                        errorsProperty.Items.Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.Schema, Id = "Error",
-                        };
-                    }
+                        Type = ReferenceType.Schema, Id = "Error",
+                    };
                 }
 
                 return Task.CompletedTask;
