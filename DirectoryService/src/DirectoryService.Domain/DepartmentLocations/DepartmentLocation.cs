@@ -34,7 +34,7 @@ public sealed class DepartmentLocation
         DepartmentId = departmentId;
         LocationId = locationId;
     }
-    
+
     // Ef Core
     private DepartmentLocation() { }
 }
