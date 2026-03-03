@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\utils\Primitives\Primitives.csproj" />
+      <ProjectReference Include="..\DirectoryService.Contracts\DirectoryService.Contracts.csproj" />
     </ItemGroup>
 
     <ItemGroup>

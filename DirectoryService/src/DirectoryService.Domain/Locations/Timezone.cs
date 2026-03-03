@@ -24,7 +24,7 @@ public sealed class Timezone(string value) : ValueObject
             return CommonErrors.IsRequired(nameof(name));
         }
 
-        if (TZConvert.KnownIanaTimeZoneNames.Contains(name) is false)
+        if (!TZConvert.KnownIanaTimeZoneNames.Contains(name))
         {
             return Errors.WrongTimezoneFormat(name);
         }
@@ -49,7 +49,7 @@ public sealed class Timezone(string value) : ValueObject
                 $"{timezone}.is.wrong.timezone.format",
                 $"Неверно задан код временной зоны: {timezone}",
                 ErrorType.VALIDATION,
-                nameof(Value));
+                nameof(timezone));
         }
     }
 }

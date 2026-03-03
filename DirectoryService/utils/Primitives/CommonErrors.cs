@@ -53,4 +53,7 @@ public static class CommonErrors
 
     public static Error Db(string? code, string message)
         => new(code ?? "db.exception", message, ErrorType.DB);
+
+    public static Error OperationCancelled(string? code)
+        => new(code ?? "operation.cancelled", "Операция была отменена", ErrorType.CANCELED);
 }

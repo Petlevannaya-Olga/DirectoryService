@@ -79,4 +79,9 @@ public enum ErrorType
     /// Ошибка базы данных
     /// </summary>
     DB,
+    
+    /// <summary>
+    /// Операция была отменена
+    /// </summary>
+    CANCELED,
 }

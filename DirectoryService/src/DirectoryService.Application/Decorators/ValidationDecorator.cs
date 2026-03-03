@@ -32,7 +32,7 @@ public class ValidationDecorator<TResponse, TCommand>(
         if (results.Count > 0)
         {
             var errors = results.ToErrors();
-            logger.LogError("Ошибка валидации: {@Errors}", errors);
+            logger.LogError("Ошибки валидации: {@Errors}", errors);
             return errors;
         }
 

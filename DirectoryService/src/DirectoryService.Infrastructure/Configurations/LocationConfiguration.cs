@@ -20,13 +20,17 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             .HasConversion(x => x.Value, name => new LocationId(name));
 
         builder
-            .ComplexProperty(x => x.Name, config =>
-            {
-                config.Property(x => x.Value)
-                    .HasMaxLength(LengthConstants.LENGTH_120)
-                    .IsRequired()
-                    .HasColumnName("name");
-            });
+            .Property(x => x.Name)
+            .HasConversion(
+                v => v.Value,
+                v => new LocationName(v))
+            .HasColumnName("name")
+            .HasMaxLength(LengthConstants.LENGTH_120)
+            .IsRequired();
+
+        builder
+            .HasIndex(x => x.Name)
+            .IsUnique();
 
         builder
             .OwnsOne(x => x.Address, b =>
