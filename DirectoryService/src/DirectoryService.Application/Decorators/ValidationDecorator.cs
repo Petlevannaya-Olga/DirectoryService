@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 using Primitives.Extensions;
@@ -8,7 +9,8 @@ namespace DirectoryService.Application.Decorators;
 
 public class ValidationDecorator<TResponse, TCommand>(
     IEnumerable<IValidator<TCommand>> validators,
-    ICommandHandler<TResponse, TCommand> inner)
+    ICommandHandler<TResponse, TCommand> inner,
+    ILogger<ValidationDecorator<TResponse, TCommand>> logger)
     : ICommandHandler<TResponse, TCommand>
     where TCommand : IValidation
 {
@@ -29,7 +31,9 @@ public class ValidationDecorator<TResponse, TCommand>(
 
         if (results.Count > 0)
         {
-            return results.ToErrors();
+            var errors = results.ToErrors();
+            logger.LogError("Ошибка валидации: {@Errors}", errors);
+            return errors;
         }
 
         var result = await inner.Handle(command, cancellationToken);

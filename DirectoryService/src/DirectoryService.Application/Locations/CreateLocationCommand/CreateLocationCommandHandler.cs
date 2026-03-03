@@ -16,7 +16,9 @@ public class CreateLocationCommandHandler(
         var locationNameCreateResult = LocationName.Create(command.Dto.Name);
         if (locationNameCreateResult.IsFailure)
         {
-            return locationNameCreateResult.Error.ToErrors();
+            var errors = locationNameCreateResult.Error.ToErrors();
+            logger.LogError("Ошибка валидации названия локации: {@Errors}", errors);
+            return errors;
         }
 
         var addressCreateResult = Address.Create(
@@ -29,14 +31,18 @@ public class CreateLocationCommandHandler(
 
         if (addressCreateResult.IsFailure)
         {
-            return addressCreateResult.Error.ToErrors();
+            var errors = addressCreateResult.Error.ToErrors();
+            logger.LogError("Ошибка валидации адреса: {@Errors}", errors);
+            return errors;
         }
 
         var timezoneCreateResult = Timezone.Create(command.Dto.Timezone);
 
         if (timezoneCreateResult.IsFailure)
         {
-            return timezoneCreateResult.Error.ToErrors();
+            var errors = timezoneCreateResult.Error.ToErrors();
+            logger.LogError("Ошибка валидации временной зоны: {@Errors}", errors);
+            return errors;
         }
 
         var location = new Location(
@@ -49,7 +55,9 @@ public class CreateLocationCommandHandler(
 
         if (addResult.IsFailure)
         {
-            return addResult.Error.ToErrors();
+            var errors = addResult.Error.ToErrors();
+            logger.LogError("Ошибка сохранения локации в БД: {@Errors}", errors);
+            return errors;
         }
 
         logger.LogInformation("Создана локация с id = {locationId}", location.Id);
