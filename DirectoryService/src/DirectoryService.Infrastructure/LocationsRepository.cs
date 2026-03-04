@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application;
 using DirectoryService.Domain.Locations;
@@ -51,19 +52,13 @@ public class LocationsRepository(
         }
     }
 
-    public async Task<Location?> GetByAddressAsync(Address address, CancellationToken cancellationToken)
+    public async Task<Location?> GetByAsync(
+        Expression<Func<Location, bool>> expression,
+        CancellationToken cancellationToken)
     {
-        return await dbContext.Locations
-            .AsNoTracking()
-            .FirstOrDefaultAsync(
-                l =>
-                    l.Address.PostalCode == address.PostalCode &&
-                    l.Address.City == address.City &&
-                    l.Address.Region == address.Region &&
-                    l.Address.Street == address.Street &&
-                    l.Address.House == address.House &&
-                    l.Address.Apartment == address.Apartment,
-                cancellationToken);
+        return await dbContext
+            .Locations
+            .FirstOrDefaultAsync(expression, cancellationToken);
     }
 
     [ExcludeFromCodeCoverage]
