@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CSharpFunctionalExtensions;
+using DirectoryService.Contracts;
 using Primitives;
 
 namespace DirectoryService.Domain.Locations;
@@ -46,57 +47,52 @@ public sealed class Address(
     /// <summary>
     /// Фабричный метод
     /// </summary>
-    /// <param name="postalCode">Индекс</param>
-    /// <param name="region">регион / субъект (область, край, штат)</param>
-    /// <param name="city">город / населённый пункт</param>
-    /// <param name="street">улица</param>
-    /// <param name="house">дом</param>
-    /// <param name="apartment">квартира / офис</param>
+    /// <param name="dto">Address dto</param>
     /// <returns>Новый адрес</returns>
-    public static Result<Address, Error> Create(
-        string postalCode,
-        string region,
-        string city,
-        string street,
-        int house,
-        int? apartment)
+    public static Result<Address, Error> Create(AddressDto dto)
     {
-        if (string.IsNullOrWhiteSpace(postalCode))
+        if (string.IsNullOrWhiteSpace(dto.PostalCode))
         {
-            return CommonErrors.IsRequired(nameof(postalCode));
+            return CommonErrors.IsRequired(nameof(dto.PostalCode));
         }
 
-        if (postalCode.Length != 6)
+        if (dto.PostalCode.Length != 6)
         {
-            return Errors.WrongPostalCodeLength(postalCode);
+            return Errors.WrongPostalCodeLength(dto.PostalCode);
         }
 
-        if (string.IsNullOrWhiteSpace(region))
+        if (string.IsNullOrWhiteSpace(dto.Region))
         {
-            return CommonErrors.IsRequired(nameof(region));
+            return CommonErrors.IsRequired(nameof(dto.Region));
         }
 
-        if (string.IsNullOrWhiteSpace(city))
+        if (string.IsNullOrWhiteSpace(dto.City))
         {
-            return CommonErrors.IsRequired(nameof(city));
+            return CommonErrors.IsRequired(nameof(dto.City));
         }
 
-        if (string.IsNullOrWhiteSpace(street))
+        if (string.IsNullOrWhiteSpace(dto.Street))
         {
-            return CommonErrors.IsRequired(nameof(street));
+            return CommonErrors.IsRequired(nameof(dto.Street));
         }
 
-        if (house < 1)
+        if (dto.House < 1)
         {
-            return Errors.WrongNumber(house, nameof(House));
+            return Errors.WrongNumber(dto.House, nameof(dto.House));
         }
 
-        if (apartment is < 1)
+        if (dto.Apartment is < 1)
         {
-            return Errors.WrongNumber(apartment.Value, nameof(Apartment));
+            return Errors.WrongNumber(dto.Apartment.Value, nameof(dto.Apartment));
         }
 
-        return new Address(postalCode, region, city, street, house, apartment);
+        return new Address(
+            dto.PostalCode,
+            dto.Region,
+            dto.City,
+            dto.Street,
+            dto.House,
+            dto.Apartment);
     }
 
     protected override IEnumerable<object> GetEqualityComponents()

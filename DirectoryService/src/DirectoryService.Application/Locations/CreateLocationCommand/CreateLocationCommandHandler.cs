@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Diagnostics.CodeAnalysis;
+using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Locations;
 using Microsoft.Extensions.Logging;
 using Primitives;
@@ -7,48 +8,33 @@ using Primitives.Abstractions;
 namespace DirectoryService.Application.Locations.CreateLocationCommand;
 
 public class CreateLocationCommandHandler(
-    ILogger<CreateLocationCommandHandler> logger,
-    ILocationsRepository repository)
+    ILocationsRepository repository,
+    ILogger<CreateLocationCommandHandler> logger)
     : ICommandHandler<Guid, CreateLocationCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(CreateLocationCommand command, CancellationToken cancellationToken)
     {
-        var locationNameCreateResult = LocationName.Create(command.Dto.Name);
-        if (locationNameCreateResult.IsFailure)
+        var locationName = LocationName.Create(command.Dto.Name);
+        var address = Address.Create(command.Dto.Address);
+        var timezone = Timezone.Create(command.Dto.Timezone);
+
+        if (await repository.GetByAsync(
+                l =>
+                    l.Address.PostalCode == address.Value.PostalCode &&
+                    l.Address.City == address.Value.City &&
+                    l.Address.Region == address.Value.Region &&
+                    l.Address.Street == address.Value.Street &&
+                    l.Address.House == address.Value.House &&
+                    l.Address.Apartment == address.Value.Apartment,
+                cancellationToken) != null)
         {
-            var errors = locationNameCreateResult.Error.ToErrors();
-            logger.LogError("Ошибка валидации названия локации: {@Errors}", errors);
-            return errors;
-        }
-
-        var addressCreateResult = Address.Create(
-            command.Dto.Address.PostalCode,
-            command.Dto.Address.Region,
-            command.Dto.Address.City,
-            command.Dto.Address.Street,
-            command.Dto.Address.House,
-            command.Dto.Address.Apartment);
-
-        if (addressCreateResult.IsFailure)
-        {
-            var errors = addressCreateResult.Error.ToErrors();
-            logger.LogError("Ошибка валидации адреса: {@Errors}", errors);
-            return errors;
-        }
-
-        var timezoneCreateResult = Timezone.Create(command.Dto.Timezone);
-
-        if (timezoneCreateResult.IsFailure)
-        {
-            var errors = timezoneCreateResult.Error.ToErrors();
-            logger.LogError("Ошибка валидации временной зоны: {@Errors}", errors);
-            return errors;
+            return CreateLocationErrors.LocationAddressConflict().ToErrors();
         }
 
         var location = new Location(
-            locationNameCreateResult.Value,
-            addressCreateResult.Value,
-            timezoneCreateResult.Value,
+            locationName.Value,
+            address.Value,
+            timezone.Value,
             []);
 
         var addResult = await repository.AddAsync(location, cancellationToken);
@@ -63,5 +49,14 @@ public class CreateLocationCommandHandler(
         logger.LogInformation("Создана локация с id = {locationId}", location.Id);
 
         return location.Id.Value;
+    }
+
+    [ExcludeFromCodeCoverage]
+    private static class CreateLocationErrors
+    {
+        public static Error LocationAddressConflict() =>
+            CommonErrors.Conflict(
+                "location.address.conflict",
+                $"Локация с таким адресом уже существует");
     }
 }
