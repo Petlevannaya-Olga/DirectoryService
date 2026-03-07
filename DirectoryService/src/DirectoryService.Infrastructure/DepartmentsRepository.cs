@@ -79,6 +79,32 @@ public class DepartmentsRepository(
         }
     }
 
+    public async Task<Result<bool, Error>> ExistsAndActive(IEnumerable<Guid> ids, CancellationToken cancellationToken)
+    {
+        try
+        {
+            int existingCount = await dbContext
+                .Departments
+                .CountAsync(l => ids.Contains(l.Id.Value) && l.IsActive, cancellationToken);
+
+            if (existingCount == ids.Count())
+            {
+                return true;
+            }
+
+            logger.LogError("Некоторые позиции не являются активными или отсутствуют в БД");
+            return Errors.ActivePositionsNotFound();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Произошла непредвиденная ошибка в процессе проверки активных позиций в БД");
+
+            return Errors.UnexpectedDbException();
+        }
+    }
+
     [ExcludeFromCodeCoverage]
     private static class Errors
     {
@@ -87,6 +113,20 @@ public class DepartmentsRepository(
             return CommonErrors.Conflict(
                 "department.name.conflict",
                 $"Подразделение с заголовком {departmentName} уже существует");
+        }
+
+        public static Error ActivePositionsNotFound()
+        {
+            return CommonErrors.NotFound(
+                "active.positions.not_found",
+                "Некоторые позиции не являются активными или отсутствуют в БД");
+        }
+
+        public static Error UnexpectedDbException()
+        {
+            return CommonErrors.Db(
+                "get.exists.and.active.from.db.exception",
+                $"Произошла непредвиденная ошибка в процессе проверки активных позиций в БД");
         }
     }
 }

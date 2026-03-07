@@ -31,7 +31,8 @@ public class CreateDepartmentCommandHandler(
         var locations = locationIds
             .Select(x => new DepartmentLocation(
                 new DepartmentId(Guid.NewGuid()),
-                new LocationId(x)));
+                new LocationId(x)))
+            .ToList();
 
         var parentId = command.Dto.ParentId;
 
