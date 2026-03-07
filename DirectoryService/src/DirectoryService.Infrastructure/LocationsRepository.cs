@@ -52,14 +52,58 @@ public class LocationsRepository(
         }
     }
 
-    public async Task<Location?> GetByAsync(
+    public async Task<Result<Location?, Error>> GetByAsync(
         Expression<Func<Location, bool>> expression,
         CancellationToken cancellationToken)
     {
-        return await dbContext
-            .Locations
-            .FirstOrDefaultAsync(expression, cancellationToken);
+        try
+        {
+            var location = await dbContext
+                .Locations
+                .FirstOrDefaultAsync(expression, cancellationToken);
+
+            return location;
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogError("Операция получения локации была отменена");
+            return CommonErrors.OperationCancelled("get.location.was.canceled");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при получении локации");
+            return CommonErrors.Db(
+                "get.location.from.db.exception",
+                $"Ошибка при получении локации");
+        }
     }
+
+    public async Task<Result<bool, Error>> ExistsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
+    {
+        try
+        {
+            int existingCount = await dbContext
+                .Locations
+                .CountAsync(l => ids.Contains(l.Id.Value), cancellationToken);
+
+            if (existingCount == ids.Count())
+            {
+                return true;
+            }
+
+            logger.LogError("Некоторые локации отсутствуют в БД");
+            return Errors.LocationsNotFound();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Произошла непредвиденная ошибка в процессе проверки наличия локаций в БД");
+
+            return Errors.LocationsNotFound();
+        }
+    }
+
 
     [ExcludeFromCodeCoverage]
     private static class Errors
@@ -69,6 +113,13 @@ public class LocationsRepository(
             return CommonErrors.Conflict(
                 "location.name.conflict",
                 $"Локация с заголовком {locationName} уже существует");
+        }
+
+        public static Error LocationsNotFound()
+        {
+            return CommonErrors.NotFound(
+                "locations.not.found",
+                $"Некоторые заданные локации отсутствуют в базе данных", null);
         }
     }
 }

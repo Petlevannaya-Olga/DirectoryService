@@ -18,17 +18,25 @@ public class CreateLocationCommandHandler(
         var address = Address.Create(command.Dto.Address);
         var timezone = Timezone.Create(command.Dto.Timezone);
 
-        if (await repository.GetByAsync(
-                l =>
-                    l.Address.PostalCode == address.Value.PostalCode &&
-                    l.Address.City == address.Value.City &&
-                    l.Address.Region == address.Value.Region &&
-                    l.Address.Street == address.Value.Street &&
-                    l.Address.House == address.Value.House &&
-                    l.Address.Apartment == address.Value.Apartment,
-                cancellationToken) != null)
+        var getResult = await repository.GetByAsync(
+            l =>
+                l.Address.PostalCode == address.Value.PostalCode &&
+                l.Address.City == address.Value.City &&
+                l.Address.Region == address.Value.Region &&
+                l.Address.Street == address.Value.Street &&
+                l.Address.House == address.Value.House &&
+                l.Address.Apartment == address.Value.Apartment,
+            cancellationToken);
+
+        if (getResult.IsFailure)
         {
-            return CreateLocationErrors.LocationAddressConflict().ToErrors();
+            return getResult.Error.ToErrors();
+        }
+
+        if (getResult.Value is not null)
+        {
+            logger.LogError("Локация с таким адресом уже существует");
+            return LocationErrors.LocationAddressConflict().ToErrors();
         }
 
         var location = new Location(
@@ -52,7 +60,7 @@ public class CreateLocationCommandHandler(
     }
 
     [ExcludeFromCodeCoverage]
-    private static class CreateLocationErrors
+    private static class LocationErrors
     {
         public static Error LocationAddressConflict() =>
             CommonErrors.Conflict(

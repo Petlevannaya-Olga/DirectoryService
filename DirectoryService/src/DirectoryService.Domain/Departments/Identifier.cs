@@ -32,26 +32,26 @@ public sealed class Identifier : ValueObject
     /// <summary>
     /// Фабричный метод
     /// </summary>
-    /// <param name="name">Название</param>
+    /// <param name="identifier">Название</param>
     /// <returns>Новый идентификатор</returns>
-    public static Result<Identifier, Error> Create(string name)
+    public static Result<Identifier, Error> Create(string identifier)
     {
-        if (string.IsNullOrWhiteSpace(name))
+        if (string.IsNullOrWhiteSpace(identifier))
         {
-            return CommonErrors.IsRequired(nameof(name));
+            return CommonErrors.IsRequired(nameof(identifier));
         }
 
-        if (name.Length is < MIN_LENGTH or > MAX_LENGTH)
+        if (identifier.Length is < MIN_LENGTH or > MAX_LENGTH)
         {
-            return CommonErrors.LengthIsWrong(nameof(name), MIN_LENGTH, MAX_LENGTH);
+            return CommonErrors.LengthIsWrong(nameof(identifier), MIN_LENGTH, MAX_LENGTH);
         }
 
-        if (!_latinRegex.IsMatch(name))
+        if (!_latinRegex.IsMatch(identifier))
         {
-            return Errors.WrongIdentifierFormat(name);
+            return Errors.WrongIdentifierFormat(identifier);
         }
 
-        return new Identifier(name.Trim());
+        return new Identifier(identifier.Trim());
     }
 
     protected override IEnumerable<object> GetEqualityComponents()
