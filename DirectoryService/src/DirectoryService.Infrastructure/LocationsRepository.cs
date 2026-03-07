@@ -82,11 +82,13 @@ public class LocationsRepository(
     {
         try
         {
+            var locationIds = ids.Select(x => new LocationId(x)).ToList();
+
             int existingCount = await dbContext
                 .Locations
-                .CountAsync(l => ids.Contains(l.Id.Value), cancellationToken);
+                .CountAsync(l => locationIds.Contains(l.Id), cancellationToken);
 
-            if (existingCount == ids.Count())
+            if (existingCount == locationIds.Count)
             {
                 return true;
             }
@@ -100,7 +102,7 @@ public class LocationsRepository(
                 ex,
                 "Произошла непредвиденная ошибка в процессе проверки наличия локаций в БД");
 
-            return Errors.LocationsNotFound();
+            return Errors.UnexpectedDbException();
         }
     }
 
@@ -120,6 +122,13 @@ public class LocationsRepository(
             return CommonErrors.NotFound(
                 "locations.not.found",
                 $"Некоторые заданные локации отсутствуют в базе данных", null);
+        }
+
+        public static Error UnexpectedDbException()
+        {
+            return CommonErrors.Db(
+                "get.exists.from.db.exception",
+                $"Произошла непредвиденная ошибка в процессе проверки существования локаций в БД");
         }
     }
 }

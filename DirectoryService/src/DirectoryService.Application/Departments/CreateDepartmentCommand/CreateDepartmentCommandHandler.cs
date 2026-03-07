@@ -74,10 +74,10 @@ public class CreateDepartmentCommandHandler(
 
             if (createParentResult.IsFailure)
             {
-                return createParentResult.Value;
+                return createParentResult.Error.ToErrors();
             }
 
-            return createParentResult.Error.ToErrors();
+            return createParentResult.Value;
         }
 
         var departmentParent = await departmentsRepository

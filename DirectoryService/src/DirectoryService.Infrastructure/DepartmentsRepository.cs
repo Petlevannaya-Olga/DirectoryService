@@ -19,16 +19,31 @@ public class DepartmentsRepository(
         {
             await dbContext.Departments.AddAsync(department, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
+            return department.Id.Value;
         }
         catch (DbUpdateException e) when (e.InnerException is PostgresException postgresException)
         {
-            if (postgresException is { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: not null }
-                && postgresException.ConstraintName.Contains(
-                    "departments_name",
-                    StringComparison.InvariantCultureIgnoreCase))
+            if (postgresException is { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: not null })
             {
-                logger.LogError("Подразделение с названием '{DepartmentName}' уже существует", department.Name.Value);
-                return Errors.DepartmentsNameConflict(department.Name.Value);
+                if (postgresException.ConstraintName.Contains(
+                        "departments_name",
+                        StringComparison.InvariantCultureIgnoreCase))
+                {
+                    logger.LogError(
+                        "Подразделение с названием '{DepartmentName}' уже существует",
+                        department.Name.Value);
+                    return Errors.DepartmentsNameConflict(department.Name.Value);
+                }
+
+                if (postgresException.ConstraintName.Contains(
+                        "departments_identifier",
+                        StringComparison.InvariantCultureIgnoreCase))
+                {
+                    logger.LogError(
+                        "Подразделение с идентификатором '{DepartmentIdentifier}' уже существует",
+                        department.Identifier.Value);
+                    return Errors.DepartmentsIdentifierConflict(department.Identifier.Value);
+                }
             }
 
             logger.LogError(e, "Ошибка добавления нового подразделения '{PositionName}'", department.Name.Value);
@@ -53,8 +68,6 @@ public class DepartmentsRepository(
                 "add.department.to.db.exception",
                 $"Ошибка добавления нового подразделения '{department.Name.Value}'");
         }
-
-        return department.Id.Value;
     }
 
     public async Task<Result<Department?, Error>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
@@ -63,7 +76,7 @@ public class DepartmentsRepository(
         {
             return await dbContext
                 .Departments
-                .FirstOrDefaultAsync(x => x.Id.Value == id, cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == new DepartmentId(id), cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -115,6 +128,13 @@ public class DepartmentsRepository(
             return CommonErrors.Conflict(
                 "department.name.conflict",
                 $"Подразделение с заголовком {departmentName} уже существует");
+        }
+
+        public static Error DepartmentsIdentifierConflict(string identifier)
+        {
+            return CommonErrors.Conflict(
+                "department.identifier.conflict",
+                $"Подразделение с идентификатором {identifier} уже существует");
         }
 
         public static Error ActiveDepartmentsNotFound()
