@@ -83,23 +83,25 @@ public class DepartmentsRepository(
     {
         try
         {
+            var departmentIds = ids.Select(x => new DepartmentId(x)).ToList();
+
             int existingCount = await dbContext
                 .Departments
-                .CountAsync(l => ids.Contains(l.Id.Value) && l.IsActive, cancellationToken);
+                .CountAsync(d => departmentIds.Contains(d.Id) && d.IsActive, cancellationToken);
 
-            if (existingCount == ids.Count())
+            if (existingCount == departmentIds.Count)
             {
                 return true;
             }
 
-            logger.LogError("Некоторые позиции не являются активными или отсутствуют в БД");
-            return Errors.ActivePositionsNotFound();
+            logger.LogError("Некоторые подразделения не являются активными или отсутствуют в БД");
+            return Errors.ActiveDepartmentsNotFound();
         }
         catch (Exception ex)
         {
             logger.LogError(
                 ex,
-                "Произошла непредвиденная ошибка в процессе проверки активных позиций в БД");
+                "Произошла непредвиденная ошибка в процессе проверки активных подразделений в БД");
 
             return Errors.UnexpectedDbException();
         }
@@ -115,18 +117,18 @@ public class DepartmentsRepository(
                 $"Подразделение с заголовком {departmentName} уже существует");
         }
 
-        public static Error ActivePositionsNotFound()
+        public static Error ActiveDepartmentsNotFound()
         {
             return CommonErrors.NotFound(
                 "active.positions.not_found",
-                "Некоторые позиции не являются активными или отсутствуют в БД");
+                "Некоторые подразделения не являются активными или отсутствуют в БД");
         }
 
         public static Error UnexpectedDbException()
         {
             return CommonErrors.Db(
                 "get.exists.and.active.from.db.exception",
-                $"Произошла непредвиденная ошибка в процессе проверки активных позиций в БД");
+                $"Произошла непредвиденная ошибка в процессе проверки активных подразделений в БД");
         }
     }
 }
