@@ -1,9 +1,7 @@
-﻿using DirectoryService.Domain;
-using DirectoryService.Domain.Departments;
+﻿using DirectoryService.Domain.Departments;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Primitives;
-using Path = DirectoryService.Domain.Departments.Path;
 
 namespace DirectoryService.Infrastructure.Configurations;
 
@@ -28,14 +26,18 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                 .IsRequired();
         });
 
+        builder.Property(x => x.Identifier)
+            .HasConversion(
+                v => v.Value,
+                v => Identifier.Create(v).Value)
+            .HasColumnName("identifier")
+            .HasMaxLength(LengthConstants.LENGTH_150)
+            .IsRequired();
 
-        builder.ComplexProperty(x => x.Identifier, config =>
-        {
-            config.Property(x => x.Value)
-                .HasColumnName("identifier")
-                .HasMaxLength(LengthConstants.LENGTH_150)
-                .IsRequired();
-        });
+        builder
+            .HasIndex(x => x.Identifier)
+            .IsUnique();
+
 
         builder
             .Property(x => x.ParentId)

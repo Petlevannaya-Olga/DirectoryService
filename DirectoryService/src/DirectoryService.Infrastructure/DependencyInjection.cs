@@ -13,6 +13,8 @@ public static class DependencyInjection
             options.UseNpgsql(configuration.GetConnectionString("DirectoryServiceDb")));
 
         services.AddScoped<ILocationsRepository, LocationsRepository>();
+        services.AddScoped<IPositionsRepository, PositionsRepository>();
+        services.AddScoped<IDepartmentsRepository, DepartmentsRepository>();
 
         return services;
     }

@@ -32,4 +32,17 @@ public static class FluentValidationExtensions
             .WithMessage(error.Message)
             .WithErrorCode(error.Code);
     }
+
+    public static IRuleBuilderOptions<T, IEnumerable<TElement>> MustBeUnique<T, TElement>(
+        this IRuleBuilder<T, IEnumerable<TElement>> ruleBuilder)
+    {
+        return ruleBuilder.Must(collection =>
+            {
+                if (collection == null) return true;
+
+                var set = new HashSet<TElement>();
+                return collection.All(set.Add);
+            })
+            .WithError(CommonErrors.CollectionContainsDublicates());
+    }
 }

@@ -1,0 +1,24 @@
+﻿using DirectoryService.Contracts;
+using DirectoryService.Domain.Departments;
+using FluentValidation;
+using Primitives;
+using Primitives.Extensions;
+
+namespace DirectoryService.Application.Departments.CreateDepartmentCommand;
+
+public class CreateDepartmentValidator : AbstractValidator<CreateDepartmentCommand>
+{
+    public CreateDepartmentValidator()
+    {
+        RuleFor(x => x.Dto.Name)
+            .MustBeValueObject(DepartmentName.Create);
+
+        RuleFor(x => x.Dto.Identifier)
+            .MustBeValueObject(Identifier.Create);
+
+        RuleFor(x => x.Dto.LocationIds)
+            .NotEmpty()
+            .WithError(CommonErrors.CollectionIsEmpty($"{nameof(CreateDepartmentDto.LocationIds)} cannot be empty)"))
+            .MustBeUnique();
+    }
+}

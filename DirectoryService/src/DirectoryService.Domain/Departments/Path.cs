@@ -1,5 +1,4 @@
 ﻿using CSharpFunctionalExtensions;
-using Primitives;
 
 namespace DirectoryService.Domain.Departments;
 

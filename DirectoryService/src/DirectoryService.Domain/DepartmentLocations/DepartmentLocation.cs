@@ -11,7 +11,7 @@ public sealed class DepartmentLocation
     /// <summary>
     /// Идентификатор
     /// </summary>
-    public DepartmentLocationsId Id { get; private set; }
+    public DepartmentLocationId Id { get; private set; }
 
     /// <summary>
     /// Идентификатор подразделения
@@ -30,7 +30,7 @@ public sealed class DepartmentLocation
     /// <param name="locationId">Идентификатор локации</param>
     public DepartmentLocation(DepartmentId departmentId, LocationId locationId)
     {
-        Id = new DepartmentLocationsId(Guid.NewGuid());
+        Id = new DepartmentLocationId(Guid.NewGuid());
         DepartmentId = departmentId;
         LocationId = locationId;
     }

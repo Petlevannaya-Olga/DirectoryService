@@ -39,7 +39,7 @@ public static class CommonErrors
             ErrorType.VALIDATION,
             propertyName);
 
-    public static Error NotFound(string? code, string message, Guid? id)
+    public static Error NotFound(string? code, string message, Guid? id = null)
         => new(code ?? "record.not.found", message, ErrorType.NOT_FOUND);
 
     public static Error Validation(string? code, string message, string? invalidField = null)
@@ -56,4 +56,10 @@ public static class CommonErrors
 
     public static Error OperationCancelled(string? code)
         => new(code ?? "operation.cancelled", "Операция была отменена", ErrorType.CANCELED);
+
+    public static Error CollectionIsEmpty(string? code)
+        => new(code ?? "array.is.empty", "Массив не может быть пустым", ErrorType.VALIDATION);
+
+    public static Error CollectionContainsDublicates(string? code = null)
+        => new(code ?? "collection.contains.dublicates", "Коллекция содержит дубликаты", ErrorType.VALIDATION);
 }
