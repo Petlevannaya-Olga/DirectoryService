@@ -20,6 +20,11 @@ public class TransactionManager(
             var transactionScope = new TransactionScope(transaction.GetDbTransaction(), transactionScopeLogger);
             return transactionScope;
         }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("Операция была отменена");
+            return CommonErrors.OperationCancelled("begin.transaction.operation.cancelled");
+        }
         catch (Exception e)
         {
             logger.LogError(e, "Не удалось создать транзакцию");
@@ -33,6 +38,11 @@ public class TransactionManager(
         {
             await dbContext.SaveChangesAsync(cancellationToken);
             return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("Операция была отменена");
+            return CommonErrors.OperationCancelled("save.changes.operation.cancelled");
         }
         catch (Exception e)
         {

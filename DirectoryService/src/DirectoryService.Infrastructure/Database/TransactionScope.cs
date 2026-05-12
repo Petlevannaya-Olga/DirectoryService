@@ -15,6 +15,11 @@ public class TransactionScope(IDbTransaction transaction, ILogger<TransactionSco
             transaction.Commit();
             return UnitResult.Success<Error>();
         }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("Операция была отменена");
+            return CommonErrors.OperationCancelled("commit.operation.cancelled");
+        }
         catch (Exception e)
         {
             logger.LogError(e, "Не удалось сохранить транзакцию");
@@ -30,6 +35,11 @@ public class TransactionScope(IDbTransaction transaction, ILogger<TransactionSco
         {
             transaction.Rollback();
             return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("Операция была отменена");
+            return CommonErrors.OperationCancelled("rollback.operation.cancelled");
         }
         catch (Exception e)
         {
