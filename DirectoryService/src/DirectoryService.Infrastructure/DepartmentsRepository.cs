@@ -92,6 +92,31 @@ public class DepartmentsRepository(
         }
     }
 
+    public async Task<Result<Department?, Error>> GetByIdWithLocationsAsync(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await dbContext
+                .Departments
+                .Include(x => x.DepartmentLocations)
+                .FirstOrDefaultAsync(x => x.Id == new DepartmentId(id), cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogError("Операция получения подразделения была отменена");
+            return CommonErrors.OperationCancelled("get.department.was.canceled");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при получении подразделения c id = {Id}", id);
+            return CommonErrors.Db(
+                "get.position.from.db.exception",
+                $"Ошибка при получении подразделения c id '{id}'");
+        }
+    }
+
     public async Task<Result<bool, Error>> ExistsAndActive(IEnumerable<Guid> ids, CancellationToken cancellationToken)
     {
         try

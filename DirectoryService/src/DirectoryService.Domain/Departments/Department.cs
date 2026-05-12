@@ -3,6 +3,7 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.DepartmentPositions;
+using DirectoryService.Domain.Locations;
 using Primitives;
 
 namespace DirectoryService.Domain.Departments;
@@ -170,5 +171,22 @@ public sealed class Department
             path,
             (short)(parent.Depth + 1),
             list);
+    }
+
+    public void UpdateLocations(IEnumerable<Guid> locationsIds)
+    {
+        var newLocationIds = locationsIds
+            .Distinct()
+            .Select(id => new LocationId(id))
+            .ToList();
+
+        _departmentLocations.Clear();
+
+        foreach (var locationId in newLocationIds)
+        {
+            _departmentLocations.Add(new DepartmentLocation(Id, locationId));
+        }
+
+        UpdatedAt = DateTime.UtcNow;
     }
 }

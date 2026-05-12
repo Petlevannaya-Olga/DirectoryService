@@ -106,6 +106,51 @@ public class LocationsRepository(
         }
     }
 
+    public async Task<Result<bool, Error>> ExistsAndActiveAsync(
+        IEnumerable<Guid> ids,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var locationIds = ids
+                .Select(id => new LocationId(id))
+                .Distinct()
+                .ToList();
+
+            bool invalidLocationExists = await dbContext.Locations
+                .Where(location => locationIds.Contains(location.Id))
+                .AnyAsync(
+                    location => !location.IsActive,
+                    cancellationToken);
+
+            if (invalidLocationExists)
+            {
+                logger.LogError("Одна или несколько локаций неактивны");
+                return Errors.LocationsInactive();
+            }
+
+            int existingCount = await dbContext.Locations
+                .CountAsync(
+                    location => locationIds.Contains(location.Id),
+                    cancellationToken);
+
+            if (existingCount == locationIds.Count)
+            {
+                return true;
+            }
+
+            logger.LogError("Некоторые локации отсутствуют в БД");
+            return Errors.LocationsNotFound();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Произошла непредвиденная ошибка в процессе проверки наличия и активности локаций в БД");
+
+            return Errors.UnexpectedDbException();
+        }
+    }
 
     [ExcludeFromCodeCoverage]
     private static class Errors
@@ -122,6 +167,13 @@ public class LocationsRepository(
             return CommonErrors.NotFound(
                 "locations.not.found",
                 $"Некоторые заданные локации отсутствуют в базе данных", null);
+        }
+
+        public static Error LocationsInactive()
+        {
+            return CommonErrors.Validation(
+                "locations.inactive",
+                $"Одна или несколько заданных локаций неактивны", null);
         }
 
         public static Error UnexpectedDbException()
