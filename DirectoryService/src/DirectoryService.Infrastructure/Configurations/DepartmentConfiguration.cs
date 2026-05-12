@@ -87,7 +87,7 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .HasMany(x => x.DepartmentLocations)
             .WithOne()
             .HasForeignKey(x => x.DepartmentId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder
             .HasMany(x => x.DepartmentPositions)
