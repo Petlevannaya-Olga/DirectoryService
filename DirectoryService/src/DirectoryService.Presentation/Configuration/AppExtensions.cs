@@ -1,4 +1,5 @@
 ﻿using DirectoryService.Presentation.Extensions;
+using Scalar.AspNetCore;
 using Serilog;
 
 namespace DirectoryService.Presentation.Configuration;
@@ -13,10 +14,12 @@ public static class AppExtensions
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
+            app.MapScalarApiReference();
             app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Directory service API"));
         }
 
         app.MapControllers();
+        app.MapHealthChecks("/health");
 
         return app;
     }

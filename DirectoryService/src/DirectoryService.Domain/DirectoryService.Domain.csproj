@@ -1,19 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
     <ItemGroup>
       <ProjectReference Include="..\..\utils\Primitives\Primitives.csproj" />
       <ProjectReference Include="..\DirectoryService.Contracts\DirectoryService.Contracts.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="CSharpFunctionalExtensions" Version="3.6.0" />
-      <PackageReference Include="TimeZoneConverter" Version="7.2.0" />
+      <PackageReference Include="CSharpFunctionalExtensions" />
+      <PackageReference Include="TimeZoneConverter" />
     </ItemGroup>
 
 </Project>

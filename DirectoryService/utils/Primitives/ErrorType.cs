@@ -1,0 +1,39 @@
+﻿namespace Primitives;
+
+public enum ErrorType
+{
+    /// <summary>
+    /// Отсутствие ошибки
+    /// </summary>
+    NONE,
+
+    /// <summary>
+    /// Ошибка валидации
+    /// </summary>
+    VALIDATION,
+
+    /// <summary>
+    /// Ничего не найдено
+    /// </summary>
+    NOT_FOUND,
+
+    /// <summary>
+    /// Серверная ошибка
+    /// </summary>
+    FAILURE,
+
+    /// <summary>
+    /// Конфликт
+    /// </summary>
+    CONFLICT,
+
+    /// <summary>
+    /// Ошибка базы данных
+    /// </summary>
+    DB,
+    
+    /// <summary>
+    /// Операция была отменена
+    /// </summary>
+    CANCELED,
+}
