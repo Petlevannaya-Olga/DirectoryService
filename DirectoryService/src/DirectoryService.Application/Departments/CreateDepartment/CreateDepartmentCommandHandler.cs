@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 
-namespace DirectoryService.Application.Departments.CreateDepartmentCommand;
+namespace DirectoryService.Application.Departments.CreateDepartment;
 
 public class CreateDepartmentCommandHandler(
     ILocationsRepository locationsRepository,

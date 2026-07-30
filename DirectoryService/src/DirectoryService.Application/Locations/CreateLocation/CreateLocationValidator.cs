@@ -2,7 +2,7 @@
 using FluentValidation;
 using Primitives.Extensions;
 
-namespace DirectoryService.Application.Locations.CreateLocationCommand;
+namespace DirectoryService.Application.Locations.CreateLocation;
 
 public class CreateLocationValidator : AbstractValidator<CreateLocationCommand>
 {

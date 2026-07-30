@@ -2,86 +2,38 @@
 
 namespace Primitives;
 
-[method: JsonConstructor]
-public record Error(string Code, string Message, ErrorType Type, string? InvalidField = null)
+public sealed record Error(
+    string Code,
+    string Message,
+    [property: JsonConverter(typeof(JsonStringEnumConverter<ErrorType>))]
+    ErrorType Type,
+    string? InvalidField = null)
 {
-    private const string SEPARATOR = "||";
-
-    /// <summary>
-    /// Код ошибки
-    /// </summary>
-    public string Code { get; } = Code;
-
-    /// <summary>
-    /// Текст ошибки
-    /// </summary>
-    public string Message { get; } = Message;
-
-    /// <summary>
-    /// Тип ошибки
-    /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public ErrorType Type { get; } = Type;
-
-    /// <summary>
-    /// Поле, в котором произошла ошибка
-    /// </summary>
-    public string? InvalidField { get; } = InvalidField;
+    private const string Separator = "||";
 
     public Errors ToErrors() => this;
 
-    public string Serialize()
-    {
-        return string.Join(SEPARATOR, Code, Message, Type);
-    }
+    public string Serialize() =>
+        string.Join(Separator, Code, Message, Type);
 
-    public static Error Deserialize(string json)
+    public static Error Deserialize(string value)
     {
-        string[] parts = json.Split(SEPARATOR);
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
 
-        if (parts.Length != 3 || !Enum.TryParse(parts[2], out ErrorType errorType))
+        string[] parts = value.Split(
+            Separator,
+            StringSplitOptions.None);
+
+        if (parts.Length != 3 ||
+            !Enum.TryParse(parts[2], out ErrorType errorType))
         {
-            throw new ArgumentException("Invalid string format");
+            throw new FormatException(
+                "Invalid serialized Error format.");
         }
 
-        return new Error(parts[0], parts[1], errorType);
+        return new Error(
+            parts[0],
+            parts[1],
+            errorType);
     }
-}
-
-public enum ErrorType
-{
-    /// <summary>
-    /// Отсутствие ошибки
-    /// </summary>
-    NONE,
-
-    /// <summary>
-    /// Ошибка валидации
-    /// </summary>
-    VALIDATION,
-
-    /// <summary>
-    /// Ничего не найдено
-    /// </summary>
-    NOT_FOUND,
-
-    /// <summary>
-    /// Серверная ошибка
-    /// </summary>
-    FAILURE,
-
-    /// <summary>
-    /// Конфликт
-    /// </summary>
-    CONFLICT,
-
-    /// <summary>
-    /// Ошибка базы данных
-    /// </summary>
-    DB,
-    
-    /// <summary>
-    /// Операция была отменена
-    /// </summary>
-    CANCELED,
 }

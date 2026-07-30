@@ -13,7 +13,3 @@ public interface ICommandHandler<in TCommand>
 {
     Task<UnitResult<Errors>> Handle(TCommand command, CancellationToken cancellationToken);
 }
-
-public interface ICommand;
-
-public interface IValidation : ICommand;

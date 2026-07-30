@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 
-namespace DirectoryService.Application.Locations.CreateLocationCommand;
+namespace DirectoryService.Application.Locations.CreateLocation;
 
 public class CreateLocationCommandHandler(
     ILocationsRepository repository,

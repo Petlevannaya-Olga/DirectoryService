@@ -1,4 +1,4 @@
-﻿using DirectoryService.Application.Locations.CreateLocationCommand;
+﻿using DirectoryService.Application.Locations.CreateLocation;
 using DirectoryService.Contracts;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Presentation.Extensions;

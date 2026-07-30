@@ -17,7 +17,7 @@ public sealed class Identifier : ValueObject
     /// </summary>
     private const int MAX_LENGTH = 150;
 
-    private static readonly Regex _latinRegex = new(@"^[A-Za-z]+$", RegexOptions.Compiled);
+    private static readonly Regex _latinRegex = new(@"^[A-Za-z]+$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     /// <summary>
     /// Значение

@@ -4,7 +4,7 @@ using FluentValidation;
 using Primitives;
 using Primitives.Extensions;
 
-namespace DirectoryService.Application.Positions.CreatePositionCommand;
+namespace DirectoryService.Application.Positions.CreatePosition;
 
 public class CreatePositionValidator : AbstractValidator<CreatePositionCommand>
 {
