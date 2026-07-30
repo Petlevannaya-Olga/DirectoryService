@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 
-namespace DirectoryService.Application.Positions.CreatePositionCommand;
+namespace DirectoryService.Application.Positions.CreatePosition;
 
 public class CreatePositionCommandHandler(
     IDepartmentsRepository departmentsRepository,

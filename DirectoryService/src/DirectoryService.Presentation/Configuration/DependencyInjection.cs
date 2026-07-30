@@ -1,6 +1,6 @@
 ﻿using DirectoryService.Application;
 using DirectoryService.Infrastructure;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Primitives;
 using Serilog;
 using Serilog.Exceptions;
@@ -22,29 +22,48 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddWebDependencies(this IServiceCollection services)
+    private static IServiceCollection AddWebDependencies(
+        this IServiceCollection services)
     {
         services.AddControllers();
+        services.AddHealthChecks();
+
         services.AddOpenApi(options =>
         {
-            options.AddSchemaTransformer((schema, context, _) =>
-            {
-                if (context.JsonTypeInfo.Type != typeof(Envelope<Errors>))
+            options.AddSchemaTransformer(
+                async (schema, context, cancellationToken) =>
                 {
-                    return Task.CompletedTask;
-                }
-
-                if (schema.Properties.TryGetValue("errors", out OpenApiSchema? errorsProperty))
-                {
-                    errorsProperty.Items.Reference = new OpenApiReference
+                    if (context.JsonTypeInfo.Type != typeof(Envelope<Errors>))
                     {
-                        Type = ReferenceType.Schema, Id = "Error",
-                    };
-                }
+                        return;
+                    }
 
-                return Task.CompletedTask;
-            });
+                    if (schema.Properties is null ||
+                        !schema.Properties.TryGetValue(
+                            "errors",
+                            out IOpenApiSchema? errorsProperty) ||
+                        errorsProperty is not OpenApiSchema errorsSchema)
+                    {
+                        return;
+                    }
+
+                    OpenApiSchema errorSchema =
+                        await context.GetOrCreateSchemaAsync(
+                            typeof(Error),
+                            parameterDescription: null,
+                            cancellationToken);
+
+                    context.Document?.AddComponent(
+                        "Error",
+                        errorSchema);
+
+                    errorsSchema.Items =
+                        new OpenApiSchemaReference(
+                            "Error",
+                            context.Document);
+                });
         });
+
         return services;
     }
 

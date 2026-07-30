@@ -320,3 +320,15 @@ dotnet_naming_style.private_constants_style.word_separator = _
 dotnet_naming_rule.private_constants_rule.symbols = private_constants
 dotnet_naming_rule.private_constants_rule.style = private_constants_style
 dotnet_naming_rule.private_constants_rule.severity = suggestion
+
+root = true
+
+# Миграции EF Core — автоматически сгенерированный код
+[**/Migrations/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+
+# На случай вложенных папок внутри Migrations
+[**/Migrations/**/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none

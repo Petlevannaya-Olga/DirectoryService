@@ -4,7 +4,7 @@ using FluentValidation;
 using Primitives;
 using Primitives.Extensions;
 
-namespace DirectoryService.Application.Departments.CreateDepartmentCommand;
+namespace DirectoryService.Application.Departments.CreateDepartment;
 
 public class CreateDepartmentValidator : AbstractValidator<CreateDepartmentCommand>
 {
