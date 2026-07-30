@@ -62,4 +62,10 @@ public static class CommonErrors
 
     public static Error CollectionContainsDublicates(string? code = null)
         => new(code ?? "collection.contains.dublicates", "Коллекция содержит дубликаты", ErrorType.VALIDATION);
+
+    public static Error Inactive(Guid id) =>
+        new(
+            "department.inactive",
+            $"Department with '{id}' is inactive.",
+            ErrorType.VALIDATION);
 }

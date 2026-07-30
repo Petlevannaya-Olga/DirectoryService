@@ -1,7 +1,6 @@
 ﻿using DirectoryService.Application.Locations.CreateLocation;
 using DirectoryService.Contracts;
 using DirectoryService.Presentation.EndpointResults;
-using DirectoryService.Presentation.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Primitives.Abstractions;
 
