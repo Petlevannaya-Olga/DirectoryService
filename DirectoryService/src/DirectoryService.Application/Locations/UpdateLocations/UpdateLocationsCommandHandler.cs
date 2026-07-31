@@ -4,15 +4,15 @@ using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 
-namespace DirectoryService.Application.Locations.UpdateLocationsCommand;
+namespace DirectoryService.Application.Locations.UpdateLocations;
 
 public class UpdateLocationsCommandHandler(
     IDepartmentsRepository departmentsRepository,
     ILocationsRepository locationsRepository,
     ITransactionManager transactionManager,
-    ILogger<UpdateLocationsCommandHandler> logger) : ICommandHandler<Guid, UpdateLocationsCommand>
+    ILogger<UpdateLocationsCommandHandler> logger) : ICommandHandler<Guid, UpdateLocations.UpdateLocationsCommand>
 {
-    public async Task<Result<Guid, Errors>> Handle(UpdateLocationsCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Guid, Errors>> Handle(UpdateLocations.UpdateLocationsCommand command, CancellationToken cancellationToken)
     {
         var getDepartmentResult = await departmentsRepository.GetByIdWithLocationsAsync(command.DepartmentId, cancellationToken);
 
