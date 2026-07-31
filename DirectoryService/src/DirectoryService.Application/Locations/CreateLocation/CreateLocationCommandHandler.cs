@@ -42,11 +42,15 @@ public sealed class CreateLocationCommandHandler(
         var nameResult = await repository.GetByAsync(x => x.Name == locationName.Value, cancellationToken);
         if (nameResult.IsFailure)
         {
-            logger.LogError("Попытка создать локацию с уже существующим именем");
             return nameResult.Error.ToErrors();
         }
 
-
+        if (nameResult.Value is not null)
+        {
+            logger.LogError("Попытка создать локацию с уже существующим именем");
+            return LocationErrors.LocationNameConflict().ToErrors();
+        }
+        
         var location = new Location(
             locationName.Value,
             address.Value,
@@ -74,5 +78,10 @@ public sealed class CreateLocationCommandHandler(
             CommonErrors.Conflict(
                 "location.address.conflict",
                 "Локация с таким адресом уже существует");
+        
+        public static Error LocationNameConflict() =>
+            CommonErrors.Conflict(
+                "location.name.conflict",
+                "Локация с таким именем уже существует");
     }
 }
