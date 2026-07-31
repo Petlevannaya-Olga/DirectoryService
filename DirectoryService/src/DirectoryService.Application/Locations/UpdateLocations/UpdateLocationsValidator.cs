@@ -10,7 +10,7 @@ public class UpdateLocationsValidator : AbstractValidator<UpdateLocations.Update
     {
         RuleFor(x => x.LocationIds)
             .NotEmpty()
-            .WithError(CommonErrors.CollectionIsEmpty($"{nameof(UpdateLocations.UpdateLocationsCommand.LocationIds)} cannot be empty)"))
+            .WithError(CommonErrors.CollectionIsEmpty($"{nameof(UpdateLocations.UpdateLocationsCommand.LocationIds)} cannot be empty"))
             .MustBeUnique();
 
         RuleFor(x => x.DepartmentId)
