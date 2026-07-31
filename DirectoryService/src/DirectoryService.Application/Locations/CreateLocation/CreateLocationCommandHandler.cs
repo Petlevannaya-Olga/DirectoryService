@@ -39,6 +39,13 @@ public sealed class CreateLocationCommandHandler(
             return LocationErrors.LocationAddressConflict().ToErrors();
         }
 
+        var nameResult = await repository.GetByAsync(x => x.Name == locationName.Value, cancellationToken);
+        if (nameResult.IsFailure)
+        {
+            return nameResult.Error.ToErrors();
+        }
+
+
         var location = new Location(
             locationName.Value,
             address.Value,
