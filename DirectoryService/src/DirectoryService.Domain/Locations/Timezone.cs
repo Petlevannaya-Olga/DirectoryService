@@ -7,6 +7,8 @@ namespace DirectoryService.Domain.Locations;
 
 public sealed class Timezone(string value) : ValueObject
 {
+    public const int MAXLENGTH = 120;
+    
     /// <summary>
     /// Значение
     /// </summary>

@@ -1,7 +1,6 @@
 ﻿using DirectoryService.Domain.Departments;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Primitives;
 
 namespace DirectoryService.Infrastructure.Configurations;
 
@@ -22,7 +21,7 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
         {
             config.Property(x => x.Value)
                 .HasColumnName("name")
-                .HasMaxLength(LengthConstants.LENGTH_150)
+                .HasMaxLength(DepartmentName.MAXLENGTH)
                 .IsRequired();
         });
 
@@ -31,7 +30,7 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                 v => v.Value,
                 v => Identifier.Create(v).Value)
             .HasColumnName("identifier")
-            .HasMaxLength(LengthConstants.LENGTH_150)
+            .HasMaxLength(Identifier.MAXLENGTH)
             .IsRequired();
 
         builder

@@ -8,12 +8,12 @@ public sealed class LocationName(string value) : ValueObject
     /// <summary>
     /// Минимальное значение длины строк
     /// </summary>
-    private const int MIN_LENGTH = 3;
+    public const int MINLENGTH = 3;
 
     /// <summary>
     /// Максимальное значение длины строки
     /// </summary>
-    private const int MAX_LENGTH = 120;
+    public const int MAXLENGTH = 120;
 
     /// <summary>
     /// Значение
@@ -32,9 +32,9 @@ public sealed class LocationName(string value) : ValueObject
             return CommonErrors.IsRequired(nameof(name));
         }
 
-        if (name.Length is < MIN_LENGTH or > MAX_LENGTH)
+        if (name.Length is < MINLENGTH or > MAXLENGTH)
         {
-            return CommonErrors.LengthIsWrong(nameof(name), MIN_LENGTH, MAX_LENGTH);
+            return CommonErrors.LengthIsWrong(nameof(name), MINLENGTH, MAXLENGTH);
         }
 
         return new LocationName(name.Trim());
