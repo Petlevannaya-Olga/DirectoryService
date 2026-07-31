@@ -7,7 +7,7 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Locations.CreateLocation;
 
-public class CreateLocationCommandHandler(
+public sealed class CreateLocationCommandHandler(
     ILocationsRepository repository,
     ILogger<CreateLocationCommandHandler> logger)
     : ICommandHandler<Guid, CreateLocationCommand>
@@ -35,7 +35,7 @@ public class CreateLocationCommandHandler(
 
         if (getResult.Value is not null)
         {
-            logger.LogError("Локация с таким адресом уже существует");
+            logger.LogWarning("Попытка создать локацию с уже существующим адресом");
             return LocationErrors.LocationAddressConflict().ToErrors();
         }
 
@@ -54,7 +54,7 @@ public class CreateLocationCommandHandler(
             return errors;
         }
 
-        logger.LogInformation("Создана локация с id = {locationId}", location.Id);
+        logger.LogInformation("Создана локация с id = {LocationId}", location.Id);
 
         return location.Id.Value;
     }
@@ -65,6 +65,6 @@ public class CreateLocationCommandHandler(
         public static Error LocationAddressConflict() =>
             CommonErrors.Conflict(
                 "location.address.conflict",
-                $"Локация с таким адресом уже существует");
+                "Локация с таким адресом уже существует");
     }
 }
