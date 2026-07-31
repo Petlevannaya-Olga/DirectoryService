@@ -9,7 +9,7 @@ public sealed class Description(string value) : ValueObject
     /// <summary>
     /// Максимальное значение длины строки
     /// </summary>
-    private const int MAX_LENGTH = 1000;
+    public const int MAXLENGTH = 1000;
 
     /// <summary>
     /// Значение
@@ -28,7 +28,7 @@ public sealed class Description(string value) : ValueObject
             return CommonErrors.IsRequired(nameof(name));
         }
 
-        if (name.Length >= MAX_LENGTH)
+        if (name.Length >= MAXLENGTH)
         {
             return Errors.ValueLengthIsTooLarge();
         }
@@ -51,7 +51,7 @@ public sealed class Description(string value) : ValueObject
         {
             return new Error(
                 $"{nameof(Value).ToLowerInvariant()}.is.too.large",
-                $"Длина описания превышает {MAX_LENGTH} символов",
+                $"Длина описания превышает {MAXLENGTH} символов",
                 ErrorType.VALIDATION);
         }
     }

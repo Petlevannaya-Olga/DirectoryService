@@ -1,7 +1,6 @@
 ﻿using DirectoryService.Domain.Positions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Primitives;
 
 namespace DirectoryService.Infrastructure.Configurations;
 
@@ -22,7 +21,7 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
             .ComplexProperty(x => x.Name, config =>
             {
                 config.Property(x => x.Value)
-                    .HasMaxLength(LengthConstants.LENGTH_100)
+                    .HasMaxLength(PositionName.MAXLENGTH)
                     .IsRequired()
                     .HasColumnName("name");
             });
@@ -31,7 +30,7 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
             .ComplexProperty(x => x.Description, config =>
             {
                 config.Property(x => x.Value)
-                    .HasMaxLength(LengthConstants.LENGTH_1000)
+                    .HasMaxLength(Description.MAXLENGTH)
                     .IsRequired()
                     .HasColumnName("description");
             });
