@@ -39,6 +39,21 @@ public class CreateLocationCommandHandler(
             return LocationErrors.LocationAddressConflict().ToErrors();
         }
 
+        var nameResult = await repository.GetByAsync(
+            l => l.Name == locationName.Value,
+            cancellationToken);
+
+        if (nameResult.IsFailure)
+        {
+            return nameResult.Error.ToErrors();
+        }
+
+        if (nameResult.Value is not null)
+        {
+            logger.LogError("Локация с таким именем уже существует");
+            return LocationErrors.LocationNameConflict().ToErrors();
+        }
+        
         var location = new Location(
             locationName.Value,
             address.Value,
@@ -66,5 +81,10 @@ public class CreateLocationCommandHandler(
             CommonErrors.Conflict(
                 "location.address.conflict",
                 $"Локация с таким адресом уже существует");
+        
+        public static Error LocationNameConflict() =>
+            CommonErrors.Conflict(
+                "location.name.conflict",
+                $"Локация с таким именем уже существует");
     }
 }
