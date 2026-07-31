@@ -1,5 +1,6 @@
 using System.Globalization;
 using DirectoryService.Presentation.Configuration;
+using DotNetEnv;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -11,6 +12,11 @@ try
 {
     Log.Information("Приложение запускается");
 
+    Env
+        .NoClobber()
+        .TraversePath()
+        .Load();
+    
     var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddProgramDependencies(builder.Configuration);
 
