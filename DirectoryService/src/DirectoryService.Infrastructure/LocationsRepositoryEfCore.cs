@@ -10,9 +10,9 @@ using Primitives;
 
 namespace DirectoryService.Infrastructure;
 
-public class LocationsRepository(
+public class LocationsRepositoryEfCore(
     ApplicationDbContext dbContext,
-    ILogger<LocationsRepository> logger) : ILocationsRepository
+    ILogger<LocationsRepositoryEfCore> logger) : ILocationsRepository
 {
     public async Task<Result<Guid, Error>> AddAsync(Location location, CancellationToken cancellationToken)
     {

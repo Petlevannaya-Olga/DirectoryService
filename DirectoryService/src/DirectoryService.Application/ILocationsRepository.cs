@@ -7,7 +7,7 @@ namespace DirectoryService.Application;
 
 public interface ILocationsRepository
 {
-    Task<Result<Guid, Error>> AddAsync(Location question, CancellationToken cancellationToken);
+    Task<Result<Guid, Error>> AddAsync(Location location, CancellationToken cancellationToken);
 
     Task<Result<Location?, Error>> GetByAsync(
         Expression<Func<Location, bool>> expression,

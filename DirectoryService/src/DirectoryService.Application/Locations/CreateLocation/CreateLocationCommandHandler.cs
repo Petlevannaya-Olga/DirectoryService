@@ -7,7 +7,7 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Locations.CreateLocation;
 
-public sealed class CreateLocationCommandHandler(
+public class CreateLocationCommandHandler(
     ILocationsRepository repository,
     ILogger<CreateLocationCommandHandler> logger)
     : ICommandHandler<Guid, CreateLocationCommand>
@@ -35,22 +35,10 @@ public sealed class CreateLocationCommandHandler(
 
         if (getResult.Value is not null)
         {
-            logger.LogError("Попытка создать локацию с уже существующим адресом");
+            logger.LogError("Локация с таким адресом уже существует");
             return LocationErrors.LocationAddressConflict().ToErrors();
         }
 
-        var nameResult = await repository.GetByAsync(x => x.Name == locationName.Value, cancellationToken);
-        if (nameResult.IsFailure)
-        {
-            return nameResult.Error.ToErrors();
-        }
-
-        if (nameResult.Value is not null)
-        {
-            logger.LogError("Попытка создать локацию с уже существующим именем");
-            return LocationErrors.LocationNameConflict().ToErrors();
-        }
-        
         var location = new Location(
             locationName.Value,
             address.Value,
@@ -66,7 +54,7 @@ public sealed class CreateLocationCommandHandler(
             return errors;
         }
 
-        logger.LogInformation("Создана локация с id = {LocationId}", location.Id);
+        logger.LogInformation("Создана локация с id = {locationId}", location.Id);
 
         return location.Id.Value;
     }
@@ -77,11 +65,6 @@ public sealed class CreateLocationCommandHandler(
         public static Error LocationAddressConflict() =>
             CommonErrors.Conflict(
                 "location.address.conflict",
-                "Локация с таким адресом уже существует");
-        
-        public static Error LocationNameConflict() =>
-            CommonErrors.Conflict(
-                "location.name.conflict",
-                "Локация с таким именем уже существует");
+                $"Локация с таким адресом уже существует");
     }
 }
