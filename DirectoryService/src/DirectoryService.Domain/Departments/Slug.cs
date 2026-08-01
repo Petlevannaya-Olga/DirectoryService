@@ -5,7 +5,7 @@ using Primitives;
 
 namespace DirectoryService.Domain.Departments;
 
-public sealed class Identifier : ValueObject
+public sealed class Slug : ValueObject
 {
     /// <summary>
     /// Минимальное значение длины строки
@@ -24,7 +24,7 @@ public sealed class Identifier : ValueObject
     /// </summary>
     public string Value { get; private set; }
 
-    private Identifier(string value)
+    private Slug(string value)
     {
         Value = value;
     }
@@ -34,7 +34,7 @@ public sealed class Identifier : ValueObject
     /// </summary>
     /// <param name="identifier">Название</param>
     /// <returns>Новый идентификатор</returns>
-    public static Result<Identifier, Error> Create(string identifier)
+    public static Result<Slug, Error> Create(string identifier)
     {
         if (string.IsNullOrWhiteSpace(identifier))
         {
@@ -51,7 +51,7 @@ public sealed class Identifier : ValueObject
             return Errors.WrongIdentifierFormat(identifier);
         }
 
-        return new Identifier(identifier.Trim());
+        return new Slug(identifier.Trim());
     }
 
     protected override IEnumerable<object> GetEqualityComponents()
@@ -71,7 +71,7 @@ public sealed class Identifier : ValueObject
                 $"{identifier}.is.wrong.identifier.format",
                 $"Идентификатор {identifier} должен содержать только латинские символы",
                 ErrorType.VALIDATION,
-                nameof(Identifier));
+                nameof(Slug));
         }
     }
 }

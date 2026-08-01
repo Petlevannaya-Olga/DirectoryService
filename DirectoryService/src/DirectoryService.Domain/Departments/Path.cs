@@ -22,21 +22,21 @@ public sealed class Path : ValueObject
     /// <summary>
     /// Путь к родительскому подразделению
     /// </summary>
-    /// <param name="identifier">Идентификатор родительского подразделения</param>
+    /// <param name="slug">Идентификатор родительского подразделения</param>
     /// <returns>Новый путь</returns>
-    public static Path CreateParent(Identifier identifier)
+    public static Path CreateParent(Slug slug)
     {
-        return new Path(identifier.Value);
+        return new Path(slug.Value);
     }
 
     /// <summary>
     /// Путь к дочернему подразделению
     /// </summary>
-    /// <param name="identifier">Идентификатор дочернего подразделения</param>
+    /// <param name="slug">Идентификатор дочернего подразделения</param>
     /// <returns>Новый путь</returns>
-    public Path CreateChild(Identifier identifier)
+    public Path CreateChild(Slug slug)
     {
-        return new Path(Value + SEPARATOR + identifier.Value);
+        return new Path(Value + SEPARATOR + slug.Value);
     }
 
     protected override IEnumerable<object> GetEqualityComponents()

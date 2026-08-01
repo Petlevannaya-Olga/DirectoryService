@@ -19,7 +19,7 @@ public class CreateDepartmentCommandHandler(
     {
         var departmentId = new DepartmentId(Guid.NewGuid());
         var nameResult = DepartmentName.Create(command.Dto.Name);
-        var identifierResult = Identifier.Create(command.Dto.Name);
+        var slugResult = Slug.Create(command.Dto.Name);
 
         var locationIds = command.Dto.LocationIds.ToList();
 
@@ -39,7 +39,7 @@ public class CreateDepartmentCommandHandler(
         var createResult = await CreateDepartment(
             parentId: parentId,
             name: nameResult.Value,
-            identifier: identifierResult.Value,
+            slug: slugResult.Value,
             locations: locations,
             cancellationToken: cancellationToken);
 
@@ -61,7 +61,7 @@ public class CreateDepartmentCommandHandler(
     private async Task<Result<Department, Errors>> CreateDepartment(
         Guid? parentId,
         DepartmentName name,
-        Identifier identifier,
+        Slug slug,
         IEnumerable<DepartmentLocation> locations,
         CancellationToken cancellationToken)
     {
@@ -69,7 +69,7 @@ public class CreateDepartmentCommandHandler(
         {
             var createParentResult = Department.CreateParent(
                 name,
-                identifier,
+                slug,
                 locations);
 
             if (createParentResult.IsFailure)
@@ -96,7 +96,7 @@ public class CreateDepartmentCommandHandler(
 
         var createChildResult = Department.CreateChild(
             name,
-            identifier,
+            slug,
             departmentParent.Value,
             locations);
 
