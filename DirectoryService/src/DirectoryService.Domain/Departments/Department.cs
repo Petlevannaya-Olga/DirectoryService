@@ -27,7 +27,7 @@ public sealed class Department
     /// <summary>
     /// Идентификатор, 3–150 симв., NOT NULL, только латиница
     /// </summary>
-    public Identifier Identifier { get; private set; }
+    public Slug Slug { get; private set; }
 
     /// <summary>
     /// Головное подразделение
@@ -88,14 +88,14 @@ public sealed class Department
     /// Конструктор с параметрами
     /// </summary>
     /// <param name="name">Название</param>
-    /// <param name="identifier">Идентификатор</param>
+    /// <param name="slug">Идентификатор</param>
     /// <param name="parentId">Ссылка на родительский элемент</param>
     /// <param name="path">Денормализованный путь</param>
     /// <param name="depth">Глубина подразделения</param>
     /// <param name="departmentLocations">Список локаций</param>
     private Department(
         DepartmentName name,
-        Identifier identifier,
+        Slug slug,
         DepartmentId? parentId,
         Path path,
         short depth,
@@ -103,7 +103,7 @@ public sealed class Department
     {
         Id = new DepartmentId(Guid.NewGuid());
         Name = name;
-        Identifier = identifier;
+        Slug = slug;
         ParentId = parentId;
         Path = path;
         Depth = depth;
@@ -118,12 +118,12 @@ public sealed class Department
     /// Создание родительского подразделения
     /// </summary>
     /// <param name="name">Название</param>
-    /// <param name="identifier">Идентификатор</param>
+    /// <param name="slug">Идентификатор</param>
     /// <param name="departmentLocations">Список локаций</param>
     /// <returns>Новое подразделение</returns>
     public static Result<Department, Error> CreateParent(
         DepartmentName name,
-        Identifier identifier,
+        Slug slug,
         IEnumerable<DepartmentLocation> departmentLocations)
     {
         var list = departmentLocations.ToList();
@@ -135,21 +135,21 @@ public sealed class Department
                 "Должна быть добавлена минимум одна локация");
         }
 
-        var path = Path.CreateParent(identifier);
-        return new Department(name, identifier, null, path, 0, list);
+        var path = Path.CreateParent(slug);
+        return new Department(name, slug, null, path, 0, list);
     }
 
     /// <summary>
     /// Создание дочернего подразделения
     /// </summary>
     /// <param name="name">Название</param>
-    /// <param name="identifier">Идентификатор</param>
+    /// <param name="slug">Идентификатор</param>
     /// <param name="parent">Родительское подразделение</param>
     /// <param name="departmentLocations">Список локаций</param>
     /// <returns>Новое подразделение</returns>
     public static Result<Department, Error> CreateChild(
         DepartmentName name,
-        Identifier identifier,
+        Slug slug,
         Department parent,
         IEnumerable<DepartmentLocation> departmentLocations)
     {
@@ -162,11 +162,11 @@ public sealed class Department
                 "Должна быть добавлена минимум одна локация");
         }
 
-        var path = parent.Path.CreateChild(identifier);
+        var path = parent.Path.CreateChild(slug);
 
         return new Department(
             name,
-            identifier,
+            slug,
             parent.Id,
             path,
             (short)(parent.Depth + 1),

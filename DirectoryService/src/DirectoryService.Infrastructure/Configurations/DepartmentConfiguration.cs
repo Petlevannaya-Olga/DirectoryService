@@ -25,16 +25,16 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                 .IsRequired();
         });
 
-        builder.Property(x => x.Identifier)
+        builder.Property(x => x.Slug)
             .HasConversion(
                 v => v.Value,
-                v => Identifier.Create(v).Value)
-            .HasColumnName("identifier")
-            .HasMaxLength(Identifier.MAXLENGTH)
+                v => Slug.Create(v).Value)
+            .HasColumnName("slug")
+            .HasMaxLength(Slug.MAXLENGTH)
             .IsRequired();
 
         builder
-            .HasIndex(x => x.Identifier)
+            .HasIndex(x => x.Slug)
             .IsUnique();
 
 

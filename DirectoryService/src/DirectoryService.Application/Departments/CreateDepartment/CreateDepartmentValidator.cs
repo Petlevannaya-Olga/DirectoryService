@@ -13,8 +13,8 @@ public class CreateDepartmentValidator : AbstractValidator<CreateDepartmentComma
         RuleFor(x => x.Dto.Name)
             .MustBeValueObject(DepartmentName.Create);
 
-        RuleFor(x => x.Dto.Identifier)
-            .MustBeValueObject(Identifier.Create);
+        RuleFor(x => x.Dto.Slug)
+            .MustBeValueObject(Slug.Create);
 
         RuleFor(x => x.Dto.LocationIds)
             .NotEmpty()

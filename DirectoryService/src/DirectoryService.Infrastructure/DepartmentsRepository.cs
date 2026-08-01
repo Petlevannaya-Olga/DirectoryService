@@ -36,13 +36,13 @@ public class DepartmentsRepository(
                 }
 
                 if (postgresException.ConstraintName.Contains(
-                        "departments_identifier",
+                        "departments_slug",
                         StringComparison.InvariantCultureIgnoreCase))
                 {
                     logger.LogError(
-                        "Подразделение с идентификатором '{DepartmentIdentifier}' уже существует",
-                        department.Identifier.Value);
-                    return Errors.DepartmentsIdentifierConflict(department.Identifier.Value);
+                        "Подразделение с идентификатором '{DepartmentSlug}' уже существует",
+                        department.Slug.Value);
+                    return Errors.DepartmentsSlugConflict(department.Slug.Value);
                 }
             }
 
@@ -155,11 +155,11 @@ public class DepartmentsRepository(
                 $"Подразделение с заголовком {departmentName} уже существует");
         }
 
-        public static Error DepartmentsIdentifierConflict(string identifier)
+        public static Error DepartmentsSlugConflict(string slug)
         {
             return CommonErrors.Conflict(
-                "department.identifier.conflict",
-                $"Подразделение с идентификатором {identifier} уже существует");
+                "department.slug.conflict",
+                $"Подразделение с идентификатором {slug} уже существует");
         }
 
         public static Error ActiveDepartmentsNotFound()
