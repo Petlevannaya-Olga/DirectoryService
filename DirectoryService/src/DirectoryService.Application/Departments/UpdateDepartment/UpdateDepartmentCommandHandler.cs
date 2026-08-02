@@ -38,10 +38,7 @@ public sealed class UpdateDepartmentCommandHandler(
 
         if (departmentResult.Value.Name == nameResult.Value)
         {
-            return CommonErrors
-                .Failure("department.with.such.name.already.exists",
-                    "Департамент с таким названием уже существует")
-                .ToErrors();
+            return command.DepartmentId;
         }
 
         var department = departmentResult.Value;

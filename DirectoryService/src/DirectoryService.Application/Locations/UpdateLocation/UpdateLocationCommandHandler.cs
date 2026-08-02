@@ -15,10 +15,6 @@ public sealed class UpdateLocationHandler(
         UpdateLocationCommand command,
         CancellationToken cancellationToken)
     {
-        var nameResult = LocationName.Create(command.Name);
-        var addressResult = Address.Create(command.Address);
-        var timezoneResult = Timezone.Create(command.Timezone);
-
         var locationId = new LocationId(command.Id);
 
         var locationResult = await locationsRepository.GetByAsync(
@@ -38,6 +34,10 @@ public sealed class UpdateLocationHandler(
                 .Failure("location.was.not.found", "Локация не найдена")
                 .ToErrors();
         }
+
+        var nameResult = LocationName.Create(command.Name);
+        var addressResult = Address.Create(command.Address);
+        var timezoneResult = Timezone.Create(command.Timezone);
 
         location.Update(
             nameResult.Value,
