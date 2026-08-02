@@ -8,7 +8,7 @@ namespace DirectoryService.Application.Departments.RemoveLocation;
 
 public sealed class RemoveLocationCommandHandler(
     IDepartmentsRepository departmentsRepository,
-    ITransactionScope transactionScope)
+    ITransactionManager transactionManager)
     : ICommandHandler<RemoveLocationCommand>
 {
     public async Task<UnitResult<Errors>> Handle(RemoveLocationCommand command, CancellationToken cancellationToken)
@@ -42,7 +42,11 @@ public sealed class RemoveLocationCommandHandler(
             return removeResult.Error.ToErrors();
         }
 
-        transactionScope.Commit();
+        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+        {
+            return saveResult.Error.ToErrors();
+        }
 
         return UnitResult.Success<Errors>();
     }

@@ -8,7 +8,7 @@ namespace DirectoryService.Application.Departments.UpdateDepartment;
 
 public sealed class UpdateDepartmentCommandHandler(
     IDepartmentsRepository departmentsRepository,
-    ITransactionScope unitOfWork)
+    ITransactionManager transactionManager)
     : ICommandHandler<Guid, UpdateDepartmentCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(UpdateDepartmentCommand command, CancellationToken cancellationToken)
@@ -45,7 +45,7 @@ public sealed class UpdateDepartmentCommandHandler(
 
         department.UpdateName(nameResult.Value);
 
-        var saveResult = unitOfWork.Commit();
+        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
 
         if (saveResult.IsFailure)
         {

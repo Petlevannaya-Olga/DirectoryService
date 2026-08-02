@@ -8,7 +8,7 @@ namespace DirectoryService.Application.Locations.UpdateLocation;
 
 public sealed class UpdateLocationHandler(
     ILocationsRepository locationsRepository,
-    ITransactionScope transactionScope)
+    ITransactionManager transactionManager)
     : ICommandHandler<Guid, UpdateLocationCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(
@@ -44,7 +44,12 @@ public sealed class UpdateLocationHandler(
             addressResult.Value,
             timezoneResult.Value);
 
-        transactionScope.Commit();
+        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
+
+        if (saveResult.IsFailure)
+        {
+            return saveResult.Error.ToErrors();
+        }
 
         return command.Id;
     }

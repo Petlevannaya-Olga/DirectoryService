@@ -52,7 +52,7 @@ public class LocationsRepository(
         }
     }
 
-    public async Task<Result<Location?, Error>> GetByAsync(
+    public async Task<Result<Location, Error>> GetByAsync(
         Expression<Func<Location, bool>> expression,
         CancellationToken cancellationToken)
     {
@@ -61,6 +61,11 @@ public class LocationsRepository(
             var location = await dbContext
                 .Locations
                 .FirstOrDefaultAsync(expression, cancellationToken);
+
+            if (location == null)
+            {
+                return CommonErrors.NotFound("location.not.found", "Локация не найдена");
+            }
 
             return location;
         }
@@ -166,6 +171,31 @@ public class LocationsRepository(
         if (!exists)
         {
             return Errors.LocationNotFound(id.Value);
+        }
+
+        return UnitResult.Success<Error>();
+    }
+    
+    public async Task<UnitResult<Error>>
+        EnsureExistsAndActiveForUpdateAsync(
+            LocationId locationId,
+            CancellationToken cancellationToken)
+    {
+        var location = await dbContext.Locations
+            .FromSqlInterpolated(
+                $"""
+                 SELECT *
+                 FROM locations
+                 WHERE id = {locationId.Value}
+                   AND is_active = TRUE
+                 FOR UPDATE
+                 """)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (location is null)
+        {
+            return Errors.LocationNotFound(
+                locationId.Value);
         }
 
         return UnitResult.Success<Error>();

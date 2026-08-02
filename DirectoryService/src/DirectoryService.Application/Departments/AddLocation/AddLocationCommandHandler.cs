@@ -9,7 +9,7 @@ namespace DirectoryService.Application.Departments.AddLocation;
 public sealed class AddLocationCommandHandler(
     IDepartmentsRepository departmentsRepository,
     ILocationsRepository locationsRepository,
-    ITransactionScope unitOfWork)
+    ITransactionManager transactionManager)
     : ICommandHandler<Guid, AddLocationCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(
@@ -17,6 +17,27 @@ public sealed class AddLocationCommandHandler(
         CancellationToken cancellationToken)
     {
         var locationId = new LocationId(command.LocationId);
+
+        var transactionResult =
+            await transactionManager.BeginTransactionAsync(
+                cancellationToken);
+
+        if (transactionResult.IsFailure)
+        {
+            return transactionResult.Error.ToErrors();
+        }
+
+        using var transactionScope = transactionResult.Value;
+
+        var locationResult =
+            await locationsRepository.EnsureExistsAndActiveForUpdateAsync(
+                locationId,
+                cancellationToken);
+
+        if (locationResult.IsFailure)
+        {
+            return locationResult.Error.ToErrors();
+        }
 
         var departmentResult =
             await departmentsRepository.GetByIdWithLocationsAsync(
@@ -28,25 +49,6 @@ public sealed class AddLocationCommandHandler(
             return departmentResult.Error.ToErrors();
         }
 
-        if (departmentResult.Value == null)
-        {
-            return CommonErrors
-                .NotFound(
-                "department.not.found",
-                $"Подразделение с идентификатором '{command.DepartmentId}' не найдено")
-                .ToErrors();
-        }
-
-        var locationExistsResult =
-            await locationsRepository.EnsureExistsAndActiveAsync(
-                locationId,
-                cancellationToken);
-
-        if (locationExistsResult.IsFailure)
-        {
-            return locationExistsResult.Error.ToErrors();
-        }
-
         var department = departmentResult.Value;
 
         var addLocationResult = department.AddLocation(locationId);
@@ -56,7 +58,16 @@ public sealed class AddLocationCommandHandler(
             return addLocationResult.Error.ToErrors();
         }
 
-        unitOfWork.Commit();
+        var saveResult =
+            await transactionManager.SaveChangesAsync(
+                cancellationToken);
+
+        if (saveResult.IsFailure)
+        {
+            return saveResult.Error.ToErrors();
+        }
+
+        transactionScope.Commit();
 
         return department.Id.Value;
     }

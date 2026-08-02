@@ -52,15 +52,22 @@ public class PositionsRepository(
         return position.Id.Value;
     }
 
-    public async Task<Result<Position?, Error>> GetByAsync(
+    public async Task<Result<Position, Error>> GetByAsync(
         Expression<Func<Position, bool>> expression,
         CancellationToken cancellationToken)
     {
         try
         {
-            return await dbContext
+            var position = await dbContext
                 .Positions
                 .FirstOrDefaultAsync(expression, cancellationToken);
+
+            if (position == null)
+            {
+                return CommonErrors.NotFound("position.not.found", "Позиция не найдена");
+            }
+
+            return position;
         }
         catch (OperationCanceledException)
         {
