@@ -1,6 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Locations.CreateLocation;
+using DirectoryService.Application.Locations.UpdateLocation;
 using DirectoryService.Contracts;
+using DirectoryService.Contracts.Locations;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
 using Primitives;
@@ -34,10 +36,22 @@ public sealed class LocationsController : ControllerBase
         return Result.Success<GetLocationDto[], Error>([]);
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<EndpointResult<Guid>> Update([FromRoute] Guid id, [FromBody] UpdateLocationDto request)
+    [HttpPatch("{id:guid}")]
+    public async Task<EndpointResult<Guid>> Update(
+        [FromServices] ICommandHandler<Guid, UpdateLocationCommand> commandHandler,
+        [FromRoute] Guid id,
+        [FromBody] UpdateLocationDto request,
+        CancellationToken cancellationToken)
     {
-        return Result.Success<Guid, Error>(id);
+        var command = new UpdateLocationCommand(
+            id,
+            request.Name,
+            request.Address,
+            request.Timezone);
+
+        return await commandHandler.Handle(
+            command,
+            cancellationToken);
     }
 
     [HttpDelete("{id:guid}")]

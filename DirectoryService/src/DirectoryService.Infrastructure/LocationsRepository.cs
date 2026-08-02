@@ -10,9 +10,9 @@ using Primitives;
 
 namespace DirectoryService.Infrastructure;
 
-public class LocationsRepositoryEfCore(
+public class LocationsRepository(
     ApplicationDbContext dbContext,
-    ILogger<LocationsRepositoryEfCore> logger) : ILocationsRepository
+    ILogger<LocationsRepository> logger) : ILocationsRepository
 {
     public async Task<Result<Guid, Error>> AddAsync(Location location, CancellationToken cancellationToken)
     {
@@ -52,7 +52,7 @@ public class LocationsRepositoryEfCore(
         }
     }
 
-    public async Task<Result<Location?, Error>> GetByAsync(
+    public async Task<Result<Location, Error>> GetByAsync(
         Expression<Func<Location, bool>> expression,
         CancellationToken cancellationToken)
     {
@@ -61,6 +61,11 @@ public class LocationsRepositoryEfCore(
             var location = await dbContext
                 .Locations
                 .FirstOrDefaultAsync(expression, cancellationToken);
+
+            if (location == null)
+            {
+                return CommonErrors.NotFound("location.not.found", "Локация не найдена");
+            }
 
             return location;
         }
@@ -152,6 +157,50 @@ public class LocationsRepositoryEfCore(
         }
     }
 
+    public async Task<UnitResult<Error>> EnsureExistsAndActiveAsync(
+        LocationId id,
+        CancellationToken cancellationToken)
+    {
+        var exists = await dbContext.Locations
+            .AnyAsync(
+                location =>
+                    location.Id == id &&
+                    location.IsActive,
+                cancellationToken);
+
+        if (!exists)
+        {
+            return Errors.LocationNotFound(id.Value);
+        }
+
+        return UnitResult.Success<Error>();
+    }
+    
+    public async Task<UnitResult<Error>>
+        EnsureExistsAndActiveForUpdateAsync(
+            LocationId locationId,
+            CancellationToken cancellationToken)
+    {
+        var location = await dbContext.Locations
+            .FromSqlInterpolated(
+                $"""
+                 SELECT *
+                 FROM locations
+                 WHERE id = {locationId.Value}
+                   AND is_active = TRUE
+                 FOR UPDATE
+                 """)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (location is null)
+        {
+            return Errors.LocationNotFound(
+                locationId.Value);
+        }
+
+        return UnitResult.Success<Error>();
+    }
+
     [ExcludeFromCodeCoverage]
     private static class Errors
     {
@@ -181,6 +230,14 @@ public class LocationsRepositoryEfCore(
             return CommonErrors.Db(
                 "get.exists.from.db.exception",
                 $"Произошла непредвиденная ошибка в процессе проверки существования локаций в БД");
+        }
+
+        public static Error LocationNotFound(Guid id)
+        {
+            return new Error(
+                "location.not.found",
+                $"Локация с идентификатором '{id}' не найдена",
+                ErrorType.NOT_FOUND);
         }
     }
 }

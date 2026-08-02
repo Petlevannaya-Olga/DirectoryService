@@ -70,13 +70,20 @@ public class DepartmentsRepository(
         }
     }
 
-    public async Task<Result<Department?, Error>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Result<Department, Error>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         try
         {
-            return await dbContext
+            var result =  await dbContext
                 .Departments
                 .FirstOrDefaultAsync(x => x.Id == new DepartmentId(id), cancellationToken);
+
+            if (result == null)
+            {
+                return CommonErrors.NotFound("department.not.found", "Департамент не найден");
+            }
+
+            return result;
         }
         catch (OperationCanceledException)
         {
@@ -92,16 +99,23 @@ public class DepartmentsRepository(
         }
     }
 
-    public async Task<Result<Department?, Error>> GetByIdWithLocationsAsync(
+    public async Task<Result<Department, Error>> GetByIdWithLocationsAsync(
         Guid id,
         CancellationToken cancellationToken)
     {
         try
         {
-            return await dbContext
+            var result = await dbContext
                 .Departments
                 .Include(x => x.DepartmentLocations)
                 .FirstOrDefaultAsync(x => x.Id == new DepartmentId(id), cancellationToken);
+            
+            if (result == null)
+            {
+                return CommonErrors.NotFound("department.not.found", "Департамент не найден");
+            }
+
+            return result;
         }
         catch (OperationCanceledException)
         {

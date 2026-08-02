@@ -136,7 +136,7 @@ public sealed class Department
         }
 
         var path = Path.CreateParent(slug);
-        return new Department(name, slug, null, path, 0, list);
+        return new Department(name, slug, parentId: null, path, 0, list);
     }
 
     /// <summary>
@@ -173,6 +173,17 @@ public sealed class Department
             list);
     }
 
+    /// <summary>
+    /// Обновляет название подразделения.
+    /// Не изменяет Slug, ParentId, Path и Depth.
+    /// </summary>
+    /// <param name="name">Новое название подразделения.</param>
+    public void UpdateName(DepartmentName name)
+    {
+        Name = name;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void UpdateLocations(IEnumerable<Guid> locationsIds)
     {
         var newLocationIds = locationsIds
@@ -188,5 +199,69 @@ public sealed class Department
         }
 
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public UnitResult<Error> AddLocation(LocationId locationId)
+    {
+        var relationAlreadyExists = _departmentLocations
+            .Exists(relation => relation.LocationId == locationId);
+
+        if (relationAlreadyExists)
+        {
+            return Errors.DepartmentLocationAlreadyExists(
+                Id.Value,
+                locationId.Value);
+        }
+
+        _departmentLocations.Add(
+            new DepartmentLocation(Id, locationId));
+
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
+    }
+
+    public UnitResult<Error> RemoveLocation(LocationId locationId)
+    {
+        var departmentLocation = _departmentLocations
+            .FirstOrDefault(relation => relation.LocationId == locationId);
+
+        if (departmentLocation is null)
+        {
+            return Errors.LocationNotAttached(
+                Id.Value,
+                locationId.Value);
+        }
+
+        _departmentLocations.Remove(departmentLocation);
+
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
+    }
+
+    private static class Errors
+    {
+        public static Error DepartmentLocationAlreadyExists(
+            Guid departmentId,
+            Guid locationId)
+        {
+            return new Error(
+                "department.location.already.exists",
+                $"Локация '{locationId}' уже привязана к подразделению '{departmentId}'",
+                ErrorType.CONFLICT,
+                "locationId");
+        }
+
+        public static Error LocationNotAttached(
+            Guid departmentId,
+            Guid locationId)
+        {
+            return new Error(
+                "department.location.not.attached",
+                $"Локация '{locationId}' не привязана к подразделению '{departmentId}'",
+                ErrorType.NOT_FOUND,
+                "locationId");
+        }
     }
 }
