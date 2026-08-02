@@ -200,4 +200,38 @@ public sealed class Department
 
         UpdatedAt = DateTime.UtcNow;
     }
+
+    public UnitResult<Error> AddLocation(LocationId locationId)
+    {
+        var relationAlreadyExists = _departmentLocations
+            .Exists(relation => relation.LocationId == locationId);
+
+        if (relationAlreadyExists)
+        {
+            return Errors.DepartmentLocationAlreadyExists(
+                Id.Value,
+                locationId.Value);
+        }
+
+        _departmentLocations.Add(
+            new DepartmentLocation(Id, locationId));
+
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
+    }
+
+    private static class Errors
+    {
+        public static Error DepartmentLocationAlreadyExists(
+            Guid departmentId,
+            Guid locationId)
+        {
+            return new Error(
+                "department.location.already.exists",
+                $"Локация '{locationId}' уже привязана к подразделению '{departmentId}'",
+                ErrorType.CONFLICT,
+                "locationId");
+        }
+    }
 }

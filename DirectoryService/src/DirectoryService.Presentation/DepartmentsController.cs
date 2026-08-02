@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Departments.AddLocation;
 using DirectoryService.Application.Departments.CreateDepartment;
 using DirectoryService.Application.Departments.UpdateDepartment;
 using DirectoryService.Application.Locations.UpdateLocations;
@@ -74,5 +75,21 @@ public sealed class DepartmentsController : ControllerBase
         CancellationToken cancellationToken)
     {
         return Result.Success<Guid, Error>(id);
+    }
+
+    [HttpPost("{departmentId:guid}/locations/{locationId:guid}")]
+    public async Task<EndpointResult<Guid>> AddLocation(
+        [FromServices] ICommandHandler<Guid, AddLocationCommand> commandHandler,
+        [FromRoute] Guid departmentId,
+        [FromRoute] Guid locationId,
+        CancellationToken cancellationToken)
+    {
+        var command = new AddLocationCommand(
+            departmentId,
+            locationId);
+
+        return await commandHandler.Handle(
+            command,
+            cancellationToken);
     }
 }

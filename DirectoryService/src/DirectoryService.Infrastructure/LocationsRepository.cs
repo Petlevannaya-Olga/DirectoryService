@@ -152,6 +152,25 @@ public class LocationsRepository(
         }
     }
 
+    public async Task<UnitResult<Error>> EnsureExistsAndActiveAsync(
+        LocationId id,
+        CancellationToken cancellationToken)
+    {
+        var exists = await dbContext.Locations
+            .AnyAsync(
+                location =>
+                    location.Id == id &&
+                    location.IsActive,
+                cancellationToken);
+
+        if (!exists)
+        {
+            return Errors.LocationNotFound(id.Value);
+        }
+
+        return UnitResult.Success<Error>();
+    }
+
     [ExcludeFromCodeCoverage]
     private static class Errors
     {
@@ -181,6 +200,14 @@ public class LocationsRepository(
             return CommonErrors.Db(
                 "get.exists.from.db.exception",
                 $"Произошла непредвиденная ошибка в процессе проверки существования локаций в БД");
+        }
+
+        public static Error LocationNotFound(Guid id)
+        {
+            return new Error(
+                "location.not.found",
+                $"Локация с идентификатором '{id}' не найдена",
+                ErrorType.NOT_FOUND);
         }
     }
 }
