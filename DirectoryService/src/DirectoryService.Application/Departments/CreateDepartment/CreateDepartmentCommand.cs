@@ -1,4 +1,4 @@
-﻿using DirectoryService.Contracts;
+﻿using DirectoryService.Contracts.Departments;
 using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Departments.CreateDepartment;

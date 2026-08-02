@@ -1,7 +1,9 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Departments.CreateDepartment;
+using DirectoryService.Application.Departments.UpdateDepartment;
 using DirectoryService.Application.Locations.UpdateLocations;
 using DirectoryService.Contracts;
+using DirectoryService.Contracts.Departments;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
 using Primitives;
@@ -35,7 +37,7 @@ public sealed class DepartmentsController : ControllerBase
         return Result.Success<GetDepartmentDto[], Error>([]);
     }
 
-    [HttpPatch("{id:guid}/locations")]
+    [HttpPut("{id:guid}/locations")]
     public async Task<EndpointResult<Guid>> UpdateLocations(
         [FromServices] ICommandHandler<Guid, UpdateLocationsCommand> commandHandler,
         [FromRoute] Guid id,
@@ -46,8 +48,22 @@ public sealed class DepartmentsController : ControllerBase
         return await commandHandler.Handle(command, cancellationToken);
     }
 
+    [HttpPatch("{id:guid}")]
+    public async Task<EndpointResult<Guid>> Update(
+        [FromServices] ICommandHandler<Guid, UpdateDepartmentCommand> commandHandler,
+        [FromRoute] Guid id,
+        [FromBody] UpdateDepartmentNameDto request,
+        CancellationToken cancellationToken)
+    {
+        var command = new UpdateDepartmentCommand(id, request.Name);
+        return await commandHandler.Handle(command, cancellationToken);
+    }
+
+
     [HttpPut("{id:guid}")]
-    public async Task<EndpointResult<Guid>> Update([FromRoute] Guid id, [FromBody] UpdateDepartmentDto request)
+    public async Task<EndpointResult<Guid>> Update(
+        [FromRoute] Guid id,
+        [FromBody] UpdateDepartmentDto request)
     {
         return Result.Success<Guid, Error>(id);
     }

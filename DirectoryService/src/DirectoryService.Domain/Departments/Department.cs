@@ -136,7 +136,7 @@ public sealed class Department
         }
 
         var path = Path.CreateParent(slug);
-        return new Department(name, slug, null, path, 0, list);
+        return new Department(name, slug, parentId: null, path, 0, list);
     }
 
     /// <summary>
@@ -171,6 +171,17 @@ public sealed class Department
             path,
             (short)(parent.Depth + 1),
             list);
+    }
+
+    /// <summary>
+    /// Обновляет название подразделения.
+    /// Не изменяет Slug, ParentId, Path и Depth.
+    /// </summary>
+    /// <param name="name">Новое название подразделения.</param>
+    public void UpdateName(DepartmentName name)
+    {
+        Name = name;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     public void UpdateLocations(IEnumerable<Guid> locationsIds)
