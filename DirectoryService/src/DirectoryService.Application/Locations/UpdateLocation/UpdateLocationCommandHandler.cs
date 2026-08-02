@@ -1,0 +1,51 @@
+﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Database;
+using DirectoryService.Domain.Locations;
+using Primitives;
+using Primitives.Abstractions;
+
+namespace DirectoryService.Application.Locations.UpdateLocation;
+
+public sealed class UpdateLocationHandler(
+    ILocationsRepository locationsRepository,
+    ITransactionScope transactionScope)
+    : ICommandHandler<Guid, UpdateLocationCommand>
+{
+    public async Task<Result<Guid, Errors>> Handle(
+        UpdateLocationCommand command,
+        CancellationToken cancellationToken)
+    {
+        var nameResult = LocationName.Create(command.Name);
+        var addressResult = Address.Create(command.Address);
+        var timezoneResult = Timezone.Create(command.Timezone);
+
+        var locationId = new LocationId(command.Id);
+
+        var locationResult = await locationsRepository.GetByAsync(
+            x => x.Id == locationId,
+            cancellationToken);
+
+        if (locationResult.IsFailure)
+        {
+            return locationResult.Error.ToErrors();
+        }
+
+        var location = locationResult.Value;
+
+        if (location is null)
+        {
+            return CommonErrors
+                .Failure("location.was.not.found", "Локация не найдена")
+                .ToErrors();
+        }
+
+        location.Update(
+            nameResult.Value,
+            addressResult.Value,
+            timezoneResult.Value);
+
+        transactionScope.Commit();
+
+        return command.Id;
+    }
+}

@@ -75,4 +75,21 @@ public sealed class Location
     /// Конструктор без параметров, EF Core
     /// </summary>
     private Location() { }
+
+    /// <summary>
+    /// Обновляет редактируемые данные локации.
+    /// </summary>
+    /// <param name="name">Название локации.</param>
+    /// <param name="address">Адрес локации.</param>
+    /// <param name="timezone">Временная зона.</param>
+    public void Update(
+        LocationName name,
+        Address address,
+        Timezone timezone)
+    {
+        Name = name;
+        Address = address;
+        Timezone = timezone;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
