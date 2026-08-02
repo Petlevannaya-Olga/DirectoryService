@@ -36,6 +36,14 @@ public sealed class UpdateDepartmentCommandHandler(
             return nameResult.Error.ToErrors();
         }
 
+        if (departmentResult.Value.Name == nameResult.Value)
+        {
+            return CommonErrors
+                .Failure("department.with.such.name.already.exists",
+                    "Департамент с таким названием уже существует")
+                .ToErrors();
+        }
+
         var department = departmentResult.Value;
 
         department.UpdateName(nameResult.Value);
