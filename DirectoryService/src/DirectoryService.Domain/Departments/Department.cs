@@ -221,6 +221,25 @@ public sealed class Department
         return UnitResult.Success<Error>();
     }
 
+    public UnitResult<Error> RemoveLocation(LocationId locationId)
+    {
+        var departmentLocation = _departmentLocations
+            .FirstOrDefault(relation => relation.LocationId == locationId);
+
+        if (departmentLocation is null)
+        {
+            return Errors.LocationNotAttached(
+                Id.Value,
+                locationId.Value);
+        }
+
+        _departmentLocations.Remove(departmentLocation);
+
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
+    }
+
     private static class Errors
     {
         public static Error DepartmentLocationAlreadyExists(
@@ -231,6 +250,17 @@ public sealed class Department
                 "department.location.already.exists",
                 $"Локация '{locationId}' уже привязана к подразделению '{departmentId}'",
                 ErrorType.CONFLICT,
+                "locationId");
+        }
+
+        public static Error LocationNotAttached(
+            Guid departmentId,
+            Guid locationId)
+        {
+            return new Error(
+                "department.location.not.attached",
+                $"Локация '{locationId}' не привязана к подразделению '{departmentId}'",
+                ErrorType.NOT_FOUND,
                 "locationId");
         }
     }

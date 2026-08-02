@@ -1,14 +1,14 @@
-﻿using CSharpFunctionalExtensions;
-using DirectoryService.Application.Departments.AddLocation;
+﻿using DirectoryService.Application.Departments.AddLocation;
 using DirectoryService.Application.Departments.CreateDepartment;
+using DirectoryService.Application.Departments.RemoveLocation;
 using DirectoryService.Application.Departments.UpdateDepartment;
 using DirectoryService.Application.Locations.UpdateLocations;
-using DirectoryService.Contracts;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
 using Primitives;
 using Primitives.Abstractions;
+using Result = CSharpFunctionalExtensions.Result;
 
 namespace DirectoryService.Presentation;
 
@@ -75,6 +75,25 @@ public sealed class DepartmentsController : ControllerBase
         CancellationToken cancellationToken)
     {
         return Result.Success<Guid, Error>(id);
+    }
+    
+    [HttpDelete("{departmentId:guid}/locations/{locationId:guid}")]
+    public async Task<EndpointResult> RemoveLocation(
+        [FromServices]
+        ICommandHandler<RemoveLocationCommand> commandHandler,
+        [FromRoute]
+        Guid departmentId,
+        [FromRoute]
+        Guid locationId,
+        CancellationToken cancellationToken)
+    {
+        var command = new RemoveLocationCommand(
+            departmentId,
+            locationId);
+
+        return await commandHandler.Handle(
+            command,
+            cancellationToken);
     }
 
     [HttpPost("{departmentId:guid}/locations/{locationId:guid}")]
