@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using DirectoryService.Domain.Departments;
+using FluentValidation;
 using Primitives;
 using Primitives.Extensions;
 
@@ -10,11 +11,12 @@ public class UpdateLocationsValidator : AbstractValidator<UpdateLocations.Update
     {
         RuleFor(x => x.LocationIds)
             .NotEmpty()
-            .WithError(CommonErrors.CollectionIsEmpty($"{nameof(UpdateLocations.UpdateLocationsCommand.LocationIds)} cannot be empty"))
+            .WithError(CommonErrors
+                .CollectionIsEmpty(nameof(UpdateLocationsCommand.LocationIds), "Список локаций не может быть пустым"))
             .MustBeUnique();
 
-        RuleFor(x => x.DepartmentId)
+        RuleFor(command => command.DepartmentId)
             .NotEmpty()
-            .WithError(CommonErrors.IsRequired($"{nameof(UpdateLocations.UpdateLocationsCommand.DepartmentId)} cannot be empty"));
+            .WithError(CommonErrors.IsEmpty(nameof(DepartmentId)));
     }
 }

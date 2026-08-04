@@ -19,7 +19,8 @@ public class CreateDepartmentValidator : AbstractValidator<CreateDepartmentComma
 
         RuleFor(x => x.Dto.LocationIds)
             .NotEmpty()
-            .WithError(CommonErrors.CollectionIsEmpty($"{nameof(CreateDepartmentDto.LocationIds)} не может быть пустым"))
+            .WithError(CommonErrors
+                .CollectionIsEmpty(nameof(CreateDepartmentDto.LocationIds), "Список локаций не может быть пустым"))
             .MustBeUnique();
     }
 }

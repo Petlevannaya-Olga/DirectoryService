@@ -62,8 +62,8 @@ public static class CommonErrors
     public static Error OperationCancelled(string? code)
         => new(code ?? "operation.cancelled", "Операция была отменена", ErrorType.CANCELED);
 
-    public static Error CollectionIsEmpty(string? code)
-        => new(code ?? "array.is.empty", "Массив не может быть пустым", ErrorType.VALIDATION);
+    public static Error CollectionIsEmpty(string? code, string? message)
+        => new(code ?? "array.is.empty", message ?? "Массив не может быть пустым", ErrorType.VALIDATION);
 
     public static Error CollectionContainsDublicates(string? code = null)
         => new(code ?? "collection.contains.dublicates", "Коллекция содержит дубликаты", ErrorType.VALIDATION);
