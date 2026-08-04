@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Locations;
 using Microsoft.Extensions.Logging;
 using Primitives;
@@ -16,9 +15,17 @@ public sealed class CreateLocationCommandHandler(
         CreateLocationCommand command,
         CancellationToken cancellationToken)
     {
-        var locationName = LocationName.Create(command.Dto.Name).Value;
-        var address = Address.Create(command.Dto.Address).Value;
-        var timezone = Timezone.Create(command.Dto.Timezone).Value;
+        var locationName = LocationName
+            .Create(command.Dto.Name)
+            .Value;
+
+        var address = Address
+            .Create(command.Dto.Address)
+            .Value;
+
+        var timezone = Timezone
+            .Create(command.Dto.Timezone)
+            .Value;
 
         var addressExistsResult = await repository.ExistsAsync(
             location =>
@@ -69,8 +76,7 @@ public sealed class CreateLocationCommandHandler(
         var location = new Location(
             locationName,
             address,
-            timezone,
-            []);
+            timezone);
 
         var addResult = await repository.AddAsync(
             location,

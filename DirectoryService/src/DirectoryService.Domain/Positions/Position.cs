@@ -12,17 +12,17 @@ public sealed class Position
     /// <summary>
     /// Идентификатор, PK
     /// </summary>
-    public PositionId Id { get; private set; } = default!;
+    public PositionId Id { get; private set; } = null!;
 
     /// <summary>
     /// Название
     /// </summary>
-    public PositionName Name { get; private set; } = default!;
+    public PositionName Name { get; private set; } = null!;
 
     /// <summary>
     /// Описание
     /// </summary>
-    public Description Description { get; private set; } = default!;
+    public Description Description { get; private set; } = null!;
 
     /// <summary>
     /// Список подразделений

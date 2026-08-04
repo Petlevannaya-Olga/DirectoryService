@@ -12,7 +12,7 @@ public sealed class Path : ValueObject
     /// <summary>
     /// Значение
     /// </summary>
-    public string Value { get; private set; }
+    public string Value { get; }
 
     private Path(string value)
     {

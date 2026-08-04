@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Positions.CreatePosition;
 using DirectoryService.Contracts;
+using DirectoryService.Contracts.Positions;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
 using Primitives;

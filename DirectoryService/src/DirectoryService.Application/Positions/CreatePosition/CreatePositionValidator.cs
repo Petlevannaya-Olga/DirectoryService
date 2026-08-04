@@ -1,4 +1,5 @@
 ﻿using DirectoryService.Contracts;
+using DirectoryService.Contracts.Positions;
 using DirectoryService.Domain.Positions;
 using FluentValidation;
 using Primitives;

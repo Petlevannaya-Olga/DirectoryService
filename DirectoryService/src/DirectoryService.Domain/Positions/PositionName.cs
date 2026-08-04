@@ -18,7 +18,7 @@ public sealed class PositionName(string value) : ValueObject
     /// <summary>
     /// Значение
     /// </summary>
-    public string Value { get; private set; } = value;
+    public string Value { get; } = value;
 
     /// <summary>
     /// Фабричный метод

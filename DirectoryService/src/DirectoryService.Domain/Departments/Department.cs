@@ -15,32 +15,32 @@ public sealed class Department
     /// <summary>
     /// Идентификатор, PK
     /// </summary>
-    public DepartmentId Id { get; private set; } = default!;
+    public DepartmentId Id { get; private set; } = null!;
 
     /// <summary>
     /// Название, 3–150 симв., NOT NULL
     /// </summary>
-    public DepartmentName Name { get; private set; } = default!;
+    public DepartmentName Name { get; private set; } = null!;
 
     /// <summary>
     /// Идентификатор, 3–150 симв., NOT NULL, только латиница
     /// </summary>
-    public Slug Slug { get; private set; } = default!;
+    public Slug Slug { get; private set; } = null!;
 
     /// <summary>
     /// Головное подразделение
     /// </summary>
-    public DepartmentId? ParentId { get; private set; }
+    public DepartmentId? ParentId { get; }
 
     /// <summary>
     /// Денормализованный путь (например, sales.it.dev-team)
     /// </summary>
-    public Path Path { get; private set; } = default!;
+    public Path Path { get; private set; } = null!;
 
     /// <summary>
     /// Глубина подразделения
     /// </summary>
-    public short Depth { get; private set; }
+    public short Depth { get; }
 
     /// <summary>
     /// Список локаций

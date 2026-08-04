@@ -12,7 +12,7 @@ public sealed class Timezone(string value) : ValueObject
     /// <summary>
     /// Значение
     /// </summary>
-    public string Value { get; private set; } = value;
+    public string Value { get; } = value;
 
     /// <summary>
     /// Фабричный метод
@@ -26,7 +26,7 @@ public sealed class Timezone(string value) : ValueObject
             return CommonErrors.IsRequired(nameof(name));
         }
 
-        if (!TZConvert.KnownIanaTimeZoneNames.Contains(name))
+        if (!TZConvert.KnownIanaTimeZoneNames.Contains(name, StringComparer.Ordinal))
         {
             return Errors.WrongTimezoneFormat(name);
         }

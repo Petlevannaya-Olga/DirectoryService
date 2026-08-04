@@ -5,7 +5,7 @@ using Primitives;
 
 namespace DirectoryService.Domain.Departments;
 
-public sealed class Slug : ValueObject
+public sealed partial class Slug : ValueObject
 {
     /// <summary>
     /// Минимальное значение длины строки
@@ -16,8 +16,6 @@ public sealed class Slug : ValueObject
     /// Максимальное значение длины строки
     /// </summary>
     public const int MAXLENGTH = 150;
-
-    private static readonly Regex _latinRegex = new(@"^[A-Za-z]+$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     /// <summary>
     /// Значение
@@ -46,9 +44,9 @@ public sealed class Slug : ValueObject
             return CommonErrors.LengthIsWrong(nameof(identifier), MINLENGTH, MAXLENGTH);
         }
 
-        if (!_latinRegex.IsMatch(identifier))
+        if (!LatinRegex.IsMatch(identifier))
         {
-            return Errors.WrongIdentifierFormat(identifier);
+            return Errors.WrongSlugFormat(identifier);
         }
 
         return new Slug(identifier.Trim());
@@ -65,13 +63,16 @@ public sealed class Slug : ValueObject
     [ExcludeFromCodeCoverage]
     private static class Errors
     {
-        public static Error WrongIdentifierFormat(string identifier)
+        public static Error WrongSlugFormat(string slug)
         {
             return new Error(
-                $"{identifier}.is.wrong.identifier.format",
-                $"Идентификатор {identifier} должен содержать только латинские символы",
+                $"{slug}.is.wrong.slug.format",
+                $"{slug} должен содержать только латинские символы",
                 ErrorType.VALIDATION,
                 nameof(Slug));
         }
     }
+
+    [GeneratedRegex(@"^[A-Za-z]+$", RegexOptions.Compiled, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex LatinRegex { get; }
 }

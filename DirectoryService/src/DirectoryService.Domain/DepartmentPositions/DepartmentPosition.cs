@@ -11,17 +11,17 @@ public sealed class DepartmentPosition
     /// <summary>
     /// Идентификатор
     /// </summary>
-    public DepartmentPositionsId Id { get; private set; }
+    public DepartmentPositionsId Id { get; private set; } = null!;
 
     /// <summary>
     /// Инентификатор подразделения
     /// </summary>
-    public DepartmentId DepartmentId { get; private set; }
+    public DepartmentId DepartmentId { get; private set; } = null!;
 
     /// <summary>
     /// Идентификатор позиции
     /// </summary>
-    public PositionId PositionId { get; private set; }
+    public PositionId PositionId { get; private set; } = null!;
 
     /// <summary>
     /// Конструктор с параметрами
