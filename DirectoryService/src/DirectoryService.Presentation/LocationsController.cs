@@ -15,35 +15,45 @@ public sealed class LocationsController : ControllerBase
 {
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(
-        [FromServices] ICommandHandler<Guid, CreateLocationCommand> commandHandler,
-        [FromBody] CreateLocationDto request,
+        [FromServices]
+        ICommandHandler<Guid, CreateLocationCommand> commandHandler,
+        [FromBody]
+        CreateLocationDto request,
         CancellationToken cancellationToken)
     {
         var command = new CreateLocationCommand(request);
-        return await commandHandler.Handle(command, cancellationToken);
+
+        return await commandHandler.Handle(
+            command,
+            cancellationToken);
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<EndpointResult<GetLocationDto>> GetById(Guid id, CancellationToken cancellationToken)
+    [HttpGet("{locationId:guid}")]
+    public EndpointResult<GetLocationDto> GetById(
+        [FromRoute] Guid locationId)
     {
-        return Result.Success<GetLocationDto, Error>(new GetLocationDto("LocationName"));
+        return Result.Success<GetLocationDto, Error>(
+            new GetLocationDto("LocationName"));
     }
 
     [HttpGet]
-    public async Task<EndpointResult<GetLocationDto[]>> Get(CancellationToken cancellationToken)
+    public EndpointResult<GetLocationDto[]> GetAll()
     {
         return Result.Success<GetLocationDto[], Error>([]);
     }
 
-    [HttpPatch("{id:guid}")]
+    [HttpPut("{locationId:guid}")]
     public async Task<EndpointResult<Guid>> Update(
-        [FromServices] ICommandHandler<Guid, UpdateLocationCommand> commandHandler,
-        [FromRoute] Guid id,
-        [FromBody] UpdateLocationDto request,
+        [FromServices]
+        ICommandHandler<Guid, UpdateLocationCommand> commandHandler,
+        [FromRoute]
+        Guid locationId,
+        [FromBody]
+        UpdateLocationDto request,
         CancellationToken cancellationToken)
     {
         var command = new UpdateLocationCommand(
-            id,
+            locationId,
             request.Name,
             request.Address,
             request.Timezone);
@@ -53,11 +63,10 @@ public sealed class LocationsController : ControllerBase
             cancellationToken);
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<EndpointResult<Guid>> Delete(
-        [FromRoute] Guid id,
-        CancellationToken cancellationToken)
+    [HttpDelete("{locationId:guid}")]
+    public EndpointResult<Guid> Delete(
+        [FromRoute] Guid locationId)
     {
-        return Result.Success<Guid, Error>(id);
+        return Result.Success<Guid, Error>(locationId);
     }
 }
