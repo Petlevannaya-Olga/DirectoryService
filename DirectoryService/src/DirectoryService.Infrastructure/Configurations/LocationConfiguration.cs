@@ -40,6 +40,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
                 b.Property(x => x.City).IsRequired();
                 b.Property(x => x.Street).IsRequired();
                 b.Property(x => x.House).IsRequired();
+                b.Property(x => x.Apartment).IsRequired(false);
             });
 
         builder
