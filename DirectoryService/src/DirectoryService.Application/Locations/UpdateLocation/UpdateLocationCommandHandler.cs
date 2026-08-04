@@ -109,7 +109,7 @@ public sealed class UpdateLocationCommandHandler(
             return saveResult.Error.ToErrors();
         }
 
-        logger.LogInformation("Данные локации с id = {Id} были обновлены", command.Id);
+        logger.LogInformation("Данные локации с id = {LocationId} были обновлены", command.Id);
         
         return location.Id.Value;
     }

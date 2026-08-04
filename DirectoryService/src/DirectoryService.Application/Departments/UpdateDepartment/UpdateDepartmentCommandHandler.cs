@@ -52,7 +52,7 @@ public sealed class UpdateDepartmentCommandHandler(
             return saveResult.Error.ToErrors();
         }
 
-        logger.LogInformation("Данные департамента с id = {Id} были обновлены", command.DepartmentId);
+        logger.LogInformation("Данные департамента с id = {DepartmentId} были обновлены", command.DepartmentId);
 
         return department.Id.Value;
     }

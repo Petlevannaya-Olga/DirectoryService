@@ -78,7 +78,7 @@ public sealed class AddLocationCommandHandler(
 
         var departmentId = department.Id.Value;
 
-        logger.LogInformation("Локации успешно добавлены к департаменту с id = {Id}", departmentId);
+        logger.LogInformation("Локации успешно добавлены к департаменту с id = {DepartmentId}", departmentId);
 
         return departmentId;
     }

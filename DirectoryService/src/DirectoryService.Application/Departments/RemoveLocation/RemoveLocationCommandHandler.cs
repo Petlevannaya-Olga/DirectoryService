@@ -47,7 +47,7 @@ public sealed class RemoveLocationCommandHandler(
             return saveResult.Error.ToErrors();
         }
 
-        logger.LogInformation("Локация с id = {Id} успешно удалена", command.LocationId);
+        logger.LogInformation("Локация с id = {LocationId} успешно удалена", command.LocationId);
         
         return UnitResult.Success<Errors>();
     }
