@@ -11,41 +11,33 @@ public sealed class UpdateDepartmentCommandHandler(
     ITransactionManager transactionManager)
     : ICommandHandler<Guid, UpdateDepartmentCommand>
 {
-    public async Task<Result<Guid, Errors>> Handle(UpdateDepartmentCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Guid, Errors>> Handle(
+        UpdateDepartmentCommand command,
+        CancellationToken cancellationToken)
     {
-        var departmentResult = await departmentsRepository.GetByIdAsync(
-            command.DepartmentId,
-            cancellationToken);
+        var departmentResult =
+            await departmentsRepository.GetByIdAsync(
+                command.DepartmentId,
+                cancellationToken);
 
         if (departmentResult.IsFailure)
         {
             return departmentResult.Error.ToErrors();
         }
 
-        if (departmentResult.Value == null)
-        {
-            return CommonErrors
-                .NotFound("department.was.not.found", "Департамент не найден")
-                .ToErrors();
-        }
-
-        var nameResult = DepartmentName.Create(command.Name);
-
-        if (nameResult.IsFailure)
-        {
-            return nameResult.Error.ToErrors();
-        }
-
-        if (departmentResult.Value.Name == nameResult.Value)
-        {
-            return command.DepartmentId;
-        }
-
         var department = departmentResult.Value;
+        var name = DepartmentName.Create(command.Name).Value;
 
-        department.UpdateName(nameResult.Value);
+        if (department.Name == name)
+        {
+            return department.Id.Value;
+        }
 
-        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
+        department.UpdateName(name);
+
+        var saveResult =
+            await transactionManager.SaveChangesAsync(
+                cancellationToken);
 
         if (saveResult.IsFailure)
         {

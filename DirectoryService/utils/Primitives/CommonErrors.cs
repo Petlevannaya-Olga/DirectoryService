@@ -2,7 +2,12 @@
 
 public static class CommonErrors
 {
-    public static Error None = new(string.Empty, string.Empty, ErrorType.NONE);
+    public static Error IsEmpty(string propertyName) =>
+        new(
+            $"{propertyName.ToLowerInvariant()}.is.empty",
+            $"Значение не задано для {propertyName}",
+            ErrorType.VALIDATION,
+            propertyName);
 
     public static Error IsRequired(string propertyName) =>
         new(
