@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Primitives;
 
@@ -9,31 +10,28 @@ public sealed record Error(
     ErrorType Type,
     string? InvalidField = null)
 {
-    private const string Separator = "||";
-
     public Errors ToErrors() => this;
 
-    public string Serialize() =>
-        string.Join(Separator, Code, Message, Type);
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(this);
+    }
 
     public static Error Deserialize(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
 
-        string[] parts = value.Split(
-            Separator,
-            StringSplitOptions.None);
-
-        if (parts.Length != 3 ||
-            !Enum.TryParse(parts[2], out ErrorType errorType))
+        try
+        {
+            return JsonSerializer.Deserialize<Error>(value)
+                   ?? throw new FormatException(
+                       "Не удалось десериализовать ошибку.");
+        }
+        catch (JsonException exception)
         {
             throw new FormatException(
-                "Invalid serialized Error format.");
+                "Некорректный формат сериализованной ошибки.",
+                exception);
         }
-
-        return new Error(
-            parts[0],
-            parts[1],
-            errorType);
     }
 }

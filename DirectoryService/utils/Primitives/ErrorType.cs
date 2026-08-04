@@ -3,11 +3,6 @@
 public enum ErrorType
 {
     /// <summary>
-    /// Отсутствие ошибки
-    /// </summary>
-    NONE,
-
-    /// <summary>
     /// Ошибка валидации
     /// </summary>
     VALIDATION,
@@ -15,7 +10,7 @@ public enum ErrorType
     /// <summary>
     /// Ничего не найдено
     /// </summary>
-    NOT_FOUND,
+    NOTFOUND,
 
     /// <summary>
     /// Серверная ошибка
@@ -31,7 +26,7 @@ public enum ErrorType
     /// Ошибка базы данных
     /// </summary>
     DB,
-    
+
     /// <summary>
     /// Операция была отменена
     /// </summary>

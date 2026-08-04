@@ -6,43 +6,60 @@ namespace Primitives.Extensions;
 
 public static class FluentValidationExtensions
 {
-    public static IRuleBuilderOptionsConditions<T, TElement> MustBeValueObject<T, TElement, TValueObject>(
-        this IRuleBuilder<T, TElement> ruleBuilder,
-        Func<TElement, Result<TValueObject, Error>> factoryMethod)
+    public static IRuleBuilderOptionsConditions<T, TElement>
+        MustBeValueObject<T, TElement, TValueObject>(
+            this IRuleBuilder<T, TElement> ruleBuilder,
+            Func<TElement, Result<TValueObject, Error>> factoryMethod)
     {
         return ruleBuilder.Custom((value, context) =>
         {
-            Result<TValueObject, Error> result = factoryMethod.Invoke(value);
+            var result = factoryMethod(value);
 
             if (result.IsSuccess)
             {
                 return;
             }
 
-            context.AddFailure(new ValidationFailure(
-                result.Error.InvalidField,
-                result.Error.Message) { ErrorCode = result.Error.Code });
+            var propertyName = string.IsNullOrWhiteSpace(
+                result.Error.InvalidField)
+                ? context.PropertyPath
+                : result.Error.InvalidField;
+
+            context.AddFailure(
+                new ValidationFailure(
+                    propertyName,
+                    result.Error.Message)
+                {
+                    ErrorCode = result.Error.Code
+                });
         });
     }
 
     public static IRuleBuilderOptions<T, TProperty> WithError<T, TProperty>(
-        this IRuleBuilderOptions<T, TProperty> rule, Error error)
+        this IRuleBuilderOptions<T, TProperty> ruleBuilder,
+        Error error)
     {
-        return rule
+        return ruleBuilder
             .WithMessage(error.Message)
             .WithErrorCode(error.Code);
     }
 
-    public static IRuleBuilderOptions<T, IEnumerable<TElement>> MustBeUnique<T, TElement>(
-        this IRuleBuilder<T, IEnumerable<TElement>> ruleBuilder)
+    public static IRuleBuilderOptions<T, IEnumerable<TElement>>
+        MustBeUnique<T, TElement>(
+            this IRuleBuilder<T, IEnumerable<TElement>> ruleBuilder)
     {
-        return ruleBuilder.Must(collection =>
+        return ruleBuilder
+            .Must(collection =>
             {
-                if (collection == null) return true;
+                if (collection is null)
+                {
+                    return true;
+                }
 
-                var set = new HashSet<TElement>();
-                return collection.All(set.Add);
+                var uniqueItems = new HashSet<TElement>();
+
+                return collection.All(uniqueItems.Add);
             })
-            .WithError(CommonErrors.CollectionContainsDublicates());
+            .WithError(CommonErrors.CollectionContainsDuplicates());
     }
 }

@@ -45,7 +45,7 @@ public sealed class ErrorsResult : IResult
             errorType switch
             {
                 ErrorType.VALIDATION => StatusCodes.Status400BadRequest,
-                ErrorType.NOT_FOUND => StatusCodes.Status404NotFound,
+                ErrorType.NOTFOUND => StatusCodes.Status404NotFound,
                 ErrorType.CONFLICT => StatusCodes.Status409Conflict,
                 _ => StatusCodes.Status500InternalServerError,
             };

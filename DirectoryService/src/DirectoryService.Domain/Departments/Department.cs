@@ -312,7 +312,7 @@ public sealed class Department
             return new Error(
                 "department.location.not.attached",
                 $"Локация '{locationId}' не привязана к подразделению '{departmentId}'",
-                ErrorType.NOT_FOUND,
+                ErrorType.NOTFOUND,
                 "locationId");
         }
     }
