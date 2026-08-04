@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Database;
 using DirectoryService.Domain.Departments;
+using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 
@@ -8,7 +9,8 @@ namespace DirectoryService.Application.Departments.UpdateDepartment;
 
 public sealed class UpdateDepartmentCommandHandler(
     IDepartmentsRepository departmentsRepository,
-    ITransactionManager transactionManager)
+    ITransactionManager transactionManager,
+    ILogger<UpdateDepartmentCommandHandler> logger)
     : ICommandHandler<Guid, UpdateDepartmentCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(
@@ -49,6 +51,8 @@ public sealed class UpdateDepartmentCommandHandler(
         {
             return saveResult.Error.ToErrors();
         }
+
+        logger.LogInformation("Данные департамента с id = {Id} были обновлены", command.DepartmentId);
 
         return department.Id.Value;
     }

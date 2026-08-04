@@ -65,6 +65,8 @@ public sealed class UpdateLocationsCommandHandler(
             return saveResult.Error.ToErrors();
         }
 
+        logger.LogInformation("Локации подразделения с id = {Id} успешно обновлены", command.DepartmentId);
+
         return department.Id.Value;
     }
 }

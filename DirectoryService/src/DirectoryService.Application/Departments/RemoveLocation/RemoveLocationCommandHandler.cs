@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Database;
 using DirectoryService.Domain.Locations;
+using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 
@@ -8,7 +9,8 @@ namespace DirectoryService.Application.Departments.RemoveLocation;
 
 public sealed class RemoveLocationCommandHandler(
     IDepartmentsRepository departmentsRepository,
-    ITransactionManager transactionManager)
+    ITransactionManager transactionManager,
+    ILogger<RemoveLocationCommandHandler> logger)
     : ICommandHandler<RemoveLocationCommand>
 {
     public async Task<UnitResult<Errors>> Handle(
@@ -45,6 +47,8 @@ public sealed class RemoveLocationCommandHandler(
             return saveResult.Error.ToErrors();
         }
 
+        logger.LogInformation("Локация с id = {Id} успешно удалена", command.LocationId);
+        
         return UnitResult.Success<Errors>();
     }
 }

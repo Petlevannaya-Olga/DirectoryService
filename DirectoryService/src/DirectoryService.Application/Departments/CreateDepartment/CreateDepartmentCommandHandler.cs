@@ -105,17 +105,6 @@ public sealed class CreateDepartmentCommandHandler(
                 return parentResult.Error.ToErrors();
             }
 
-            if (parentResult.Value is null)
-            {
-                logger.LogWarning(
-                    "Родительское подразделение с id = {DepartmentId} не найдено",
-                    parentId.Value);
-
-                return DepartmentErrors
-                    .NotFound(parentId.Value)
-                    .ToErrors();
-            }
-
             createResult = Department.CreateChild(
                 name,
                 slug,
