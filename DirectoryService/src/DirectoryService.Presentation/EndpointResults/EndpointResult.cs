@@ -6,7 +6,8 @@ using IResult = Microsoft.AspNetCore.Http.IResult;
 
 namespace DirectoryService.Presentation.EndpointResults;
 
-public sealed class EndpointResult<TValue> : IResult, IEndpointMetadataProvider
+public sealed class EndpointResult<TValue>
+    : IResult, IEndpointMetadataProvider
 {
     private readonly IResult _result;
 
@@ -14,56 +15,14 @@ public sealed class EndpointResult<TValue> : IResult, IEndpointMetadataProvider
     {
         _result = result.IsSuccess
             ? new SuccessResult<TValue>(result.Value)
-            : new ErrorsResult(result.Error);
+            : new ErrorsResult<TValue>(result.Error);
     }
 
     public EndpointResult(Result<TValue, Errors> result)
     {
         _result = result.IsSuccess
             ? new SuccessResult<TValue>(result.Value)
-            : new ErrorsResult(result.Error);
-    }
-
-    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
-    {
-        ArgumentNullException.ThrowIfNull(method);
-        ArgumentNullException.ThrowIfNull(builder);
-
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(200, typeof(Envelope<TValue>), ["application/json"]));
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(400, typeof(Envelope<TValue>), ["application/json"]));
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(401, typeof(Envelope<TValue>), ["application/json"]));
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(403, typeof(Envelope<TValue>), ["application/json"]));
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(404, typeof(Envelope<TValue>), ["application/json"]));
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(409, typeof(Envelope<TValue>), ["application/json"]));
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(500, typeof(Envelope<TValue>), ["application/json"]));
-    }
-
-    public Task ExecuteAsync(HttpContext httpContext) => _result.ExecuteAsync(httpContext);
-
-    public static implicit operator EndpointResult<TValue>(Result<TValue, Error> result)
-        => new(result);
-
-    public static implicit operator EndpointResult<TValue>(Result<TValue, Errors> result)
-        => new(result);
-}
-
-public sealed class EndpointResult
-    : IResult, IEndpointMetadataProvider
-{
-    private readonly IResult _result;
-
-    public EndpointResult(UnitResult<Error> result)
-    {
-        _result = result.IsSuccess
-            ? Results.NoContent()
-            : new ErrorsResult(result.Error);
-    }
-
-    public EndpointResult(UnitResult<Errors> result)
-    {
-        _result = result.IsSuccess
-            ? Results.NoContent()
-            : new ErrorsResult(result.Error);
+            : new ErrorsResult<TValue>(result.Error);
     }
 
     public Task ExecuteAsync(HttpContext httpContext)
@@ -78,47 +37,65 @@ public sealed class EndpointResult
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
+        EndpointResultMetadata.AddJsonResponse(
+            builder,
+            StatusCodes.Status200OK,
+            typeof(Envelope<TValue>));
+
+        EndpointResultMetadata.AddErrorResponses<TValue>(builder);
+    }
+
+    public static implicit operator EndpointResult<TValue>(
+        Result<TValue, Error> result)
+    {
+        return new EndpointResult<TValue>(result);
+    }
+
+    public static implicit operator EndpointResult<TValue>(
+        Result<TValue, Errors> result)
+    {
+        return new EndpointResult<TValue>(result);
+    }
+}
+
+public sealed class EndpointResult
+    : IResult, IEndpointMetadataProvider
+{
+    private readonly IResult _result;
+
+    public EndpointResult(UnitResult<Error> result)
+    {
+        _result = result.IsSuccess
+            ? Results.NoContent()
+            : new ErrorsResult<object?>(result.Error);
+    }
+
+    public EndpointResult(UnitResult<Errors> result)
+    {
+        _result = result.IsSuccess
+            ? Results.NoContent()
+            : new ErrorsResult<object?>(result.Error);
+    }
+
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        return _result.ExecuteAsync(httpContext);
+    }
+
+    public static void PopulateMetadata(
+        MethodInfo method,
+        EndpointBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
+
         builder.Metadata.Add(
             new ProducesResponseTypeMetadata(
                 StatusCodes.Status204NoContent));
 
-        var errorType = typeof(Envelope<Errors>);
-
-        builder.Metadata.Add(
-            new ProducesResponseTypeMetadata(
-                StatusCodes.Status400BadRequest,
-                errorType,
-                ["application/json"]));
-
-        builder.Metadata.Add(
-            new ProducesResponseTypeMetadata(
-                StatusCodes.Status401Unauthorized,
-                errorType,
-                ["application/json"]));
-
-        builder.Metadata.Add(
-            new ProducesResponseTypeMetadata(
-                StatusCodes.Status403Forbidden,
-                errorType,
-                ["application/json"]));
-
-        builder.Metadata.Add(
-            new ProducesResponseTypeMetadata(
-                StatusCodes.Status404NotFound,
-                errorType,
-                ["application/json"]));
-
-        builder.Metadata.Add(
-            new ProducesResponseTypeMetadata(
-                StatusCodes.Status409Conflict,
-                errorType,
-                ["application/json"]));
-
-        builder.Metadata.Add(
-            new ProducesResponseTypeMetadata(
-                StatusCodes.Status500InternalServerError,
-                errorType,
-                ["application/json"]));
+        EndpointResultMetadata.AddErrorResponses<object?>(builder);
     }
 
     public static implicit operator EndpointResult(
@@ -131,5 +108,47 @@ public sealed class EndpointResult
         UnitResult<Errors> result)
     {
         return new EndpointResult(result);
+    }
+}
+
+internal static class EndpointResultMetadata
+{
+    private static readonly int[] ErrorStatusCodes =
+    [
+        StatusCodes.Status400BadRequest,
+        StatusCodes.Status401Unauthorized,
+        StatusCodes.Status403Forbidden,
+        StatusCodes.Status404NotFound,
+        StatusCodes.Status409Conflict,
+        StatusCodes.Status500InternalServerError
+    ];
+
+    public static void AddErrorResponses<TValue>(
+        EndpointBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        foreach (var statusCode in ErrorStatusCodes)
+        {
+            AddJsonResponse(
+                builder,
+                statusCode,
+                typeof(Envelope<TValue>));
+        }
+    }
+
+    public static void AddJsonResponse(
+        EndpointBuilder builder,
+        int statusCode,
+        Type responseType)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(responseType);
+
+        builder.Metadata.Add(
+            new ProducesResponseTypeMetadata(
+                statusCode,
+                responseType,
+                ["application/json"]));
     }
 }
