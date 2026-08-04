@@ -23,11 +23,13 @@ public sealed class ValidationDecorator<TResponse, TCommand>(
 
         if (validatorsArray.Length == 0)
         {
-            return await inner.Handle(command, cancellationToken);
+            return await inner.Handle(
+                command,
+                cancellationToken);
         }
 
         var context = new ValidationContext<TCommand>(command);
-        var validationResults = new List<ValidationResult>();
+        var failedResults = new List<ValidationResult>();
 
         foreach (var validator in validatorsArray)
         {
@@ -35,16 +37,17 @@ public sealed class ValidationDecorator<TResponse, TCommand>(
                 context,
                 cancellationToken);
 
-            validationResults.Add(validationResult);
+            if (!validationResult.IsValid)
+            {
+                failedResults.Add(validationResult);
+            }
         }
-
-        var failedResults = validationResults
-            .Where(result => !result.IsValid)
-            .ToList();
 
         if (failedResults.Count == 0)
         {
-            return await inner.Handle(command, cancellationToken);
+            return await inner.Handle(
+                command,
+                cancellationToken);
         }
 
         var errors = failedResults.ToErrors();
@@ -55,6 +58,5 @@ public sealed class ValidationDecorator<TResponse, TCommand>(
             errors);
 
         return errors;
-
     }
 }
