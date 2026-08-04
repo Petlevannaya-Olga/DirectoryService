@@ -1,32 +1,34 @@
-﻿using DirectoryService.Domain.DepartmentPositions;
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+﻿using CSharpFunctionalExtensions;
+using DirectoryService.Domain.DepartmentPositions;
+using DirectoryService.Domain.Departments;
+using Primitives;
 
 namespace DirectoryService.Domain.Positions;
 
 public sealed class Position
 {
-    private readonly List<DepartmentPosition> _departmentPositions;
+    private readonly List<DepartmentPosition> _departmentPositions = [];
 
     /// <summary>
     /// Идентификатор, PK
     /// </summary>
-    public PositionId Id { get; private set; }
+    public PositionId Id { get; private set; } = default!;
 
     /// <summary>
     /// Название
     /// </summary>
-    public PositionName Name { get; private set; }
+    public PositionName Name { get; private set; } = default!;
 
     /// <summary>
     /// Описание
     /// </summary>
-    public Description Description { get; private set; }
+    public Description Description { get; private set; } = default!;
 
     /// <summary>
     /// Список подразделений
     /// </summary>
-    public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions;
+    public IReadOnlyList<DepartmentPosition> DepartmentPositions =>
+        _departmentPositions;
 
     /// <summary>
     /// Для soft delete
@@ -43,26 +45,66 @@ public sealed class Position
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
 
+    // EF Core
+    private Position()
+    {
+    }
+
     /// <summary>
     /// Конструктор с параметрами
     /// </summary>
     /// <param name="name">Название</param>
     /// <param name="description">Описание</param>
-    /// <param name="departments">Список подразделений</param>
-    public Position(
+    /// <param name="departmentIds">Список идентификаторов подразделений</param>
+    private Position(
         PositionName name,
         Description description,
-        IEnumerable<DepartmentPosition> departments)
+        IEnumerable<DepartmentId> departmentIds)
     {
+        var now = DateTime.UtcNow;
+
         Id = new PositionId(Guid.NewGuid());
         Name = name;
         Description = description;
         IsActive = true;
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
-        _departmentPositions = departments.ToList();
+        CreatedAt = now;
+        UpdatedAt = now;
+
+        foreach (var departmentId in departmentIds)
+        {
+            _departmentPositions.Add(
+                new DepartmentPosition(
+                    departmentId,
+                    Id));
+        }
     }
 
-    // EF Core
-    private Position() { }
+    /// <summary>
+    /// Создание позиции
+    /// </summary>
+    /// <param name="name">Название</param>
+    /// <param name="description">Описание</param>
+    /// <param name="departmentIds">Список идентификаторов подразделений</param>
+    /// <returns>Новая позиция</returns>
+    public static Result<Position, Error> Create(
+        PositionName name,
+        Description description,
+        IEnumerable<DepartmentId> departmentIds)
+    {
+        var departments = departmentIds
+            .Distinct()
+            .ToList();
+
+        if (departments.Count == 0)
+        {
+            return CommonErrors.Validation(
+                "position.department",
+                "Должно быть добавлено минимум одно подразделение");
+        }
+
+        return new Position(
+            name,
+            description,
+            departments);
+    }
 }

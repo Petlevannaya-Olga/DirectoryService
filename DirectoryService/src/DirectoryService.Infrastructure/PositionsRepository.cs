@@ -52,6 +52,38 @@ public class PositionsRepository(
         return position.Id.Value;
     }
 
+    public async Task<Result<bool, Error>> ExistsAsync(
+        Expression<Func<Position, bool>> expression,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var exists = await dbContext
+                .Positions
+                .AnyAsync(expression, cancellationToken);
+
+            return exists;
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning(
+                "Операция проверки существования позиции была отменена");
+
+            return CommonErrors.OperationCancelled(
+                "check.position.exists.was.canceled");
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                exception,
+                "Ошибка при проверке существования позиции");
+
+            return CommonErrors.Db(
+                "check.position.exists.in.db.exception",
+                "Ошибка при проверке существования позиции");
+        }
+    }
+
     public async Task<Result<Position, Error>> GetByAsync(
         Expression<Func<Position, bool>> expression,
         CancellationToken cancellationToken)

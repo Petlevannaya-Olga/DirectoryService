@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using CSharpFunctionalExtensions;
-using DirectoryService.Domain.DepartmentPositions;
+﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions;
 using Microsoft.Extensions.Logging;
@@ -9,77 +7,90 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Positions.CreatePosition;
 
-public class CreatePositionCommandHandler(
+public sealed class CreatePositionCommandHandler(
     IDepartmentsRepository departmentsRepository,
     IPositionsRepository positionsRepository,
-    ILogger<CreatePositionCommandHandler> logger) : ICommandHandler<Guid, CreatePositionCommand>
+    ILogger<CreatePositionCommandHandler> logger)
+    : ICommandHandler<Guid, CreatePositionCommand>
 {
-    public async Task<Result<Guid, Errors>> Handle(CreatePositionCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Guid, Errors>> Handle(
+        CreatePositionCommand command,
+        CancellationToken cancellationToken)
     {
-        var positionId = new PositionId(Guid.NewGuid());
+        var name = PositionName
+            .Create(command.Dto.Name)
+            .Value;
 
-        var nameResult = PositionName.Create(command.Dto.Name);
+        var description = Description
+            .Create(command.Dto.Description)
+            .Value;
 
-        var getResult = await positionsRepository
-            .GetByAsync(x => x.Name == nameResult.Value, cancellationToken);
+        var positionExistsResult =
+            await positionsRepository.ExistsAsync(
+                position =>
+                    position.Name == name &&
+                    position.IsActive,
+                cancellationToken);
 
-        if (getResult.IsFailure)
+        if (positionExistsResult.IsFailure)
         {
-            return getResult.Error.ToErrors();
+            return positionExistsResult.Error.ToErrors();
         }
 
-        if (getResult.Value is not null && getResult.Value.IsActive)
+        if (positionExistsResult.Value)
         {
-            var errors = PositionErrors.PositionNameConflict(command.Dto.Name).ToErrors();
-            logger.LogError(
-                "Нельзя добавить позицию с названием '{PositionName}', т.к. она уже существует и активна",
+            logger.LogWarning(
+                "Активная позиция с названием '{PositionName}' уже существует",
                 command.Dto.Name);
-            return errors;
+
+            return PositionErrors
+                .NameConflict(command.Dto.Name)
+                .ToErrors();
         }
 
-        var descriptionResult = Description.Create(command.Dto.Description);
+        var departmentIds = command.Dto.DepartmentIds
+            .Distinct()
+            .ToList();
 
-        if (descriptionResult.IsFailure)
+        var departmentsResult =
+            await departmentsRepository.ExistsAndActive(
+                departmentIds,
+                cancellationToken);
+
+        if (departmentsResult.IsFailure)
         {
-            return descriptionResult.Error.ToErrors();
+            return departmentsResult.Error.ToErrors();
         }
 
-        var existAndActiveResult = await departmentsRepository
-            .ExistsAndActive(command.Dto.DepartmentIds, cancellationToken);
+        var departments = departmentIds
+            .ConvertAll(id => new DepartmentId(id))
+;
 
-        if (existAndActiveResult.IsFailure)
+        var createResult = Position.Create(
+            name,
+            description,
+            departments);
+
+        if (createResult.IsFailure)
         {
-            return existAndActiveResult.Error.ToErrors();
+            return createResult.Error.ToErrors();
         }
 
-        var departmentPositions = command.Dto.DepartmentIds
-            .Select(x => new DepartmentPosition(new DepartmentId(x), positionId));
+        var position = createResult.Value;
 
-        var newPosition = new Position(
-            nameResult.Value,
-            descriptionResult.Value,
-            departmentPositions);
-
-        var addResult = await positionsRepository.AddAsync(newPosition, cancellationToken);
+        var addResult = await positionsRepository.AddAsync(
+            position,
+            cancellationToken);
 
         if (addResult.IsFailure)
         {
             return addResult.Error.ToErrors();
         }
 
-        logger.LogInformation("Создана позиция с id = {PositionId}", positionId);
+        logger.LogInformation(
+            "Создана позиция с id = {PositionId}",
+            position.Id.Value);
 
-        return positionId.Value;
-    }
-
-    [ExcludeFromCodeCoverage]
-    private static class PositionErrors
-    {
-        public static Error PositionNameConflict(string positionName)
-        {
-            return CommonErrors.Conflict(
-                "position.name.conflict",
-                $"Позиция с названием {positionName} уже существует и активна");
-        }
+        return position.Id.Value;
     }
 }
