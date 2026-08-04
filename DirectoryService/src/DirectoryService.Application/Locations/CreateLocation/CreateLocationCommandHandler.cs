@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Locations;
 using Microsoft.Extensions.Logging;
 using Primitives;
@@ -7,84 +6,110 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Locations.CreateLocation;
 
-public class CreateLocationCommandHandler(
+public sealed class CreateLocationCommandHandler(
     ILocationsRepository repository,
     ILogger<CreateLocationCommandHandler> logger)
     : ICommandHandler<Guid, CreateLocationCommand>
 {
-    public async Task<Result<Guid, Errors>> Handle(CreateLocationCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Guid, Errors>> Handle(
+        CreateLocationCommand command,
+        CancellationToken cancellationToken)
     {
-        var locationName = LocationName.Create(command.Dto.Name);
-        var address = Address.Create(command.Dto.Address);
-        var timezone = Timezone.Create(command.Dto.Timezone);
+        var locationNameResult = LocationName.Create(command.Dto.Name);
 
-        var getResult = await repository.GetByAsync(
-            l =>
-                l.Address.PostalCode == address.Value.PostalCode &&
-                l.Address.City == address.Value.City &&
-                l.Address.Region == address.Value.Region &&
-                l.Address.Street == address.Value.Street &&
-                l.Address.House == address.Value.House &&
-                l.Address.Apartment == address.Value.Apartment,
-            cancellationToken);
-
-        if (getResult.IsFailure)
+        if (locationNameResult.IsFailure)
         {
-            return getResult.Error.ToErrors();
+            return locationNameResult.Error.ToErrors();
         }
 
-        if (getResult.Value is not null)
+        var addressResult = Address.Create(command.Dto.Address);
+
+        if (addressResult.IsFailure)
         {
-            logger.LogError("Локация с таким адресом уже существует");
-            return LocationErrors.LocationAddressConflict().ToErrors();
+            return addressResult.Error.ToErrors();
         }
 
-        var nameResult = await repository.GetByAsync(
-            l => l.Name == locationName.Value,
-            cancellationToken);
+        var timezoneResult = Timezone.Create(command.Dto.Timezone);
 
-        if (nameResult.IsFailure)
+        if (timezoneResult.IsFailure)
         {
-            return nameResult.Error.ToErrors();
+            return timezoneResult.Error.ToErrors();
         }
 
-        if (nameResult.Value is not null)
-        {
-            logger.LogError("Локация с таким именем уже существует");
-            return LocationErrors.LocationNameConflict().ToErrors();
-        }
+        var address = addressResult.Value;
+        var locationName = locationNameResult.Value;
+        var timezone = timezoneResult.Value;
         
-        var location = new Location(
-            locationName.Value,
-            address.Value,
-            timezone.Value,
-            []);
+        var addressExistsResult = await repository.ExistsAsync(
+            location =>
+                location.Address.PostalCode == address.PostalCode &&
+                location.Address.City == address.City &&
+                location.Address.Region == address.Region &&
+                location.Address.Street == address.Street &&
+                location.Address.House == address.House &&
+                location.Address.Apartment == address.Apartment,
+            cancellationToken);
 
-        var addResult = await repository.AddAsync(location, cancellationToken);
+        if (addressExistsResult.IsFailure)
+        {
+            return addressExistsResult.Error.ToErrors();
+        }
+
+        if (addressExistsResult.Value)
+        {
+            logger.LogWarning(
+                "Локация с адресом {@Address} уже существует",
+                address);
+
+            return LocationErrors
+                .AddressConflict()
+                .ToErrors();
+        }
+
+        var nameExistsResult = await repository.ExistsAsync(
+            location => location.Name == locationName,
+            cancellationToken);
+
+        if (nameExistsResult.IsFailure)
+        {
+            return nameExistsResult.Error.ToErrors();
+        }
+
+        if (nameExistsResult.Value)
+        {
+            logger.LogWarning(
+                "Локация с именем {LocationName} уже существует",
+                locationName);
+
+            return LocationErrors
+                .NameConflict()
+                .ToErrors();
+        }
+
+        var location = new Location(
+            locationName,
+            address,
+            timezone);
+
+        var addResult = await repository.AddAsync(
+            location,
+            cancellationToken);
 
         if (addResult.IsFailure)
         {
             var errors = addResult.Error.ToErrors();
-            logger.LogError("Ошибка сохранения локации в БД: {@Errors}", errors);
+
+            logger.LogError(
+                "Ошибка сохранения локации в БД: {@Errors}",
+                errors);
+
             return errors;
         }
 
-        logger.LogInformation("Создана локация с id = {locationId}", location.Id);
+        logger.LogInformation(
+            "Создана локация с id = {LocationId}",
+            location.Id.Value);
 
         return location.Id.Value;
-    }
-
-    [ExcludeFromCodeCoverage]
-    private static class LocationErrors
-    {
-        public static Error LocationAddressConflict() =>
-            CommonErrors.Conflict(
-                "location.address.conflict",
-                $"Локация с таким адресом уже существует");
-        
-        public static Error LocationNameConflict() =>
-            CommonErrors.Conflict(
-                "location.name.conflict",
-                $"Локация с таким именем уже существует");
     }
 }

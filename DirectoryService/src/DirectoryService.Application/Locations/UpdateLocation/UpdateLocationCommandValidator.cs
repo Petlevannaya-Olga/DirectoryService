@@ -1,5 +1,6 @@
 ﻿using DirectoryService.Domain.Locations;
 using FluentValidation;
+using Primitives;
 using Primitives.Extensions;
 
 namespace DirectoryService.Application.Locations.UpdateLocation;
@@ -11,15 +12,15 @@ public sealed class UpdateLocationCommandValidator
     {
         RuleFor(c => c.Id)
             .NotEmpty()
-            .WithMessage("Идентификатор локации обязателен");
+            .WithError(CommonErrors.IsEmpty(nameof(LocationId)));
 
         RuleFor(c => c.Name)
             .MustBeValueObject(LocationName.Create);
-           
+
         RuleFor(c => c.Address)
             .MustBeValueObject(Address.Create);
 
         RuleFor(command => command.Timezone)
-           .MustBeValueObject(Timezone.Create);
+            .MustBeValueObject(Timezone.Create);
     }
 }

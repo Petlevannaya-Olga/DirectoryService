@@ -1,4 +1,5 @@
 ﻿using DirectoryService.Contracts;
+using DirectoryService.Contracts.Positions;
 using DirectoryService.Domain.Positions;
 using FluentValidation;
 using Primitives;
@@ -18,7 +19,8 @@ public class CreatePositionValidator : AbstractValidator<CreatePositionCommand>
 
         RuleFor(x => x.Dto.DepartmentIds)
             .NotEmpty()
-            .WithError(CommonErrors.CollectionIsEmpty($"{nameof(CreatePositionDto.DepartmentIds)} cannot be empty)"))
+            .WithError(CommonErrors
+                .CollectionIsEmpty(nameof(CreatePositionDto.DepartmentIds), "Список подразделений не может быть пустым"))
             .MustBeUnique();
     }
 }

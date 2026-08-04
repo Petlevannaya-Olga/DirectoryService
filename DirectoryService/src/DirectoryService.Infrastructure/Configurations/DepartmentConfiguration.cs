@@ -1,4 +1,5 @@
 ﻿using DirectoryService.Domain.Departments;
+using DirectoryService.Infrastructure.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -37,11 +38,9 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .HasIndex(x => x.Slug)
             .IsUnique();
 
-
         builder
-            .Property(x => x.ParentId)
-            .IsRequired(false)
-            .HasConversion(x => x!.Value, name => new DepartmentId(name))
+            .Property(department => department.ParentId)
+            .HasConversion<DepartmentIdConverter>()
             .HasColumnName("parent_id");
 
         builder.ComplexProperty(x => x.Path, config =>

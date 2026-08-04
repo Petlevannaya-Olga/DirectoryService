@@ -9,93 +9,135 @@ using Primitives;
 
 namespace DirectoryService.Infrastructure;
 
-public class DepartmentsRepository(
+public sealed class DepartmentsRepository(
     ApplicationDbContext dbContext,
-    ILogger<DepartmentsRepository> logger) : IDepartmentsRepository
+    ILogger<DepartmentsRepository> logger)
+    : IDepartmentsRepository
 {
-    public async Task<Result<Guid, Error>> AddAsync(Department department, CancellationToken cancellationToken)
+    public async Task<Result<Guid, Error>> AddAsync(
+        Department department,
+        CancellationToken cancellationToken)
     {
         try
         {
-            await dbContext.Departments.AddAsync(department, cancellationToken);
+            await dbContext.Departments.AddAsync(
+                department,
+                cancellationToken);
+
             await dbContext.SaveChangesAsync(cancellationToken);
+
             return department.Id.Value;
         }
-        catch (DbUpdateException e) when (e.InnerException is PostgresException postgresException)
+        catch (DbUpdateException exception)
+            when (exception.InnerException is PostgresException postgresException)
         {
-            if (postgresException is { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: not null })
+            if (postgresException is
+                {
+                    SqlState: PostgresErrorCodes.UniqueViolation,
+                    ConstraintName: not null
+                })
             {
                 if (postgresException.ConstraintName.Contains(
                         "departments_name",
-                        StringComparison.InvariantCultureIgnoreCase))
+                        StringComparison.OrdinalIgnoreCase))
                 {
-                    logger.LogError(
+                    logger.LogWarning(
                         "Подразделение с названием '{DepartmentName}' уже существует",
                         department.Name.Value);
-                    return Errors.DepartmentsNameConflict(department.Name.Value);
+
+                    return Errors.DepartmentNameConflict(
+                        department.Name.Value);
                 }
 
                 if (postgresException.ConstraintName.Contains(
                         "departments_slug",
-                        StringComparison.InvariantCultureIgnoreCase))
+                        StringComparison.OrdinalIgnoreCase))
                 {
-                    logger.LogError(
+                    logger.LogWarning(
                         "Подразделение с идентификатором '{DepartmentSlug}' уже существует",
                         department.Slug.Value);
-                    return Errors.DepartmentsSlugConflict(department.Slug.Value);
+
+                    return Errors.DepartmentSlugConflict(
+                        department.Slug.Value);
                 }
             }
 
-            logger.LogError(e, "Ошибка добавления нового подразделения '{PositionName}'", department.Name.Value);
-
-            return CommonErrors.Db(
-                "add.department.to.db.exception",
-                $"Ошибка добавления нового подразделения '{department.Name.Value}'");
-        }
-        catch (OperationCanceledException e)
-        {
             logger.LogError(
-                e,
-                "Операция добавления нового подразделения '{DepartmentName}' была отменена",
+                exception,
+                "Ошибка добавления подразделения '{DepartmentName}'",
                 department.Name.Value);
 
-            return CommonErrors.OperationCancelled("add.department.was.canceled");
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Ошибка добавления нового подразделения '{DepartmentName}'", department.Name.Value);
             return CommonErrors.Db(
                 "add.department.to.db.exception",
-                $"Ошибка добавления нового подразделения '{department.Name.Value}'");
+                $"Ошибка добавления подразделения '{department.Name.Value}'");
+        }
+        catch (OperationCanceledException exception)
+        {
+            logger.LogWarning(
+                exception,
+                "Операция добавления подразделения '{DepartmentName}' была отменена",
+                department.Name.Value);
+
+            return CommonErrors.OperationCancelled(
+                "add.department.was.canceled");
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                exception,
+                "Ошибка добавления подразделения '{DepartmentName}'",
+                department.Name.Value);
+
+            return CommonErrors.Db(
+                "add.department.to.db.exception",
+                $"Ошибка добавления подразделения '{department.Name.Value}'");
         }
     }
 
-    public async Task<Result<Department, Error>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Result<Department, Error>> GetByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var result =  await dbContext
-                .Departments
-                .FirstOrDefaultAsync(x => x.Id == new DepartmentId(id), cancellationToken);
+            var departmentId = new DepartmentId(id);
 
-            if (result == null)
+            var department = await dbContext
+                .Departments
+                .FirstOrDefaultAsync(
+                    item => item.Id == departmentId,
+                    cancellationToken);
+
+            if (department is null)
             {
-                return CommonErrors.NotFound("department.not.found", "Департамент не найден");
+                return CommonErrors.NotFound(
+                    "department.not.found",
+                    $"Подразделение с идентификатором '{id}' не найдено",
+                    id);
             }
 
-            return result;
+            return department;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException exception)
         {
-            logger.LogError("Операция получения подразделения была отменена");
-            return CommonErrors.OperationCancelled("get.department.was.canceled");
+            logger.LogWarning(
+                exception,
+                "Операция получения подразделения с id = {DepartmentId} была отменена",
+                id);
+
+            return CommonErrors.OperationCancelled(
+                "get.department.was.canceled");
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            logger.LogError(ex, "Ошибка при получении подразделения c id = {Id}", id);
+            logger.LogError(
+                exception,
+                "Ошибка получения подразделения с id = {DepartmentId}",
+                id);
+
             return CommonErrors.Db(
-                "get.position.from.db.exception",
-                $"Ошибка при получении подразделения c id '{id}'");
+                "get.department.from.db.exception",
+                $"Ошибка получения подразделения с идентификатором '{id}'");
         }
     }
 
@@ -105,55 +147,91 @@ public class DepartmentsRepository(
     {
         try
         {
-            var result = await dbContext
+            var departmentId = new DepartmentId(id);
+
+            var department = await dbContext
                 .Departments
-                .Include(x => x.DepartmentLocations)
-                .FirstOrDefaultAsync(x => x.Id == new DepartmentId(id), cancellationToken);
-            
-            if (result == null)
+                .Include(item => item.DepartmentLocations)
+                .FirstOrDefaultAsync(
+                    item => item.Id == departmentId,
+                    cancellationToken);
+
+            if (department is null)
             {
-                return CommonErrors.NotFound("department.not.found", "Департамент не найден");
+                return CommonErrors.NotFound(
+                    "department.not.found",
+                    $"Подразделение с идентификатором '{id}' не найдено",
+                    id);
             }
 
-            return result;
+            return department;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException exception)
         {
-            logger.LogError("Операция получения подразделения была отменена");
-            return CommonErrors.OperationCancelled("get.department.was.canceled");
+            logger.LogWarning(
+                exception,
+                "Операция получения подразделения с id = {DepartmentId} была отменена",
+                id);
+
+            return CommonErrors.OperationCancelled(
+                "get.department.with.locations.was.canceled");
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            logger.LogError(ex, "Ошибка при получении подразделения c id = {Id}", id);
+            logger.LogError(
+                exception,
+                "Ошибка получения подразделения с id = {DepartmentId}",
+                id);
+
             return CommonErrors.Db(
-                "get.position.from.db.exception",
-                $"Ошибка при получении подразделения c id '{id}'");
+                "get.department.with.locations.from.db.exception",
+                $"Ошибка получения подразделения с идентификатором '{id}'");
         }
     }
 
-    public async Task<Result<bool, Error>> ExistsAndActive(IEnumerable<Guid> ids, CancellationToken cancellationToken)
+    public async Task<Result<bool, Error>> ExistsAndActive(
+        IEnumerable<Guid> ids,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var departmentIds = ids.Select(x => new DepartmentId(x)).ToList();
+            var departmentIds = ids
+                .Distinct()
+                .Select(id => new DepartmentId(id))
+                .ToList();
 
-            int existingCount = await dbContext
+            var existingCount = await dbContext
                 .Departments
-                .CountAsync(d => departmentIds.Contains(d.Id) && d.IsActive, cancellationToken);
+                .CountAsync(
+                    department =>
+                        departmentIds.Contains(department.Id) &&
+                        department.IsActive,
+                    cancellationToken);
 
             if (existingCount == departmentIds.Count)
             {
                 return true;
             }
 
-            logger.LogError("Некоторые подразделения не являются активными или отсутствуют в БД");
+            logger.LogWarning(
+                "Некоторые подразделения отсутствуют или неактивны");
+
             return Errors.ActiveDepartmentsNotFound();
         }
-        catch (Exception ex)
+        catch (OperationCanceledException exception)
+        {
+            logger.LogWarning(
+                exception,
+                "Операция проверки активных подразделений была отменена");
+
+            return CommonErrors.OperationCancelled(
+                "check.departments.exists.and.active.was.canceled");
+        }
+        catch (Exception exception)
         {
             logger.LogError(
-                ex,
-                "Произошла непредвиденная ошибка в процессе проверки активных подразделений в БД");
+                exception,
+                "Ошибка проверки активных подразделений");
 
             return Errors.UnexpectedDbException();
         }
@@ -162,32 +240,33 @@ public class DepartmentsRepository(
     [ExcludeFromCodeCoverage]
     private static class Errors
     {
-        public static Error DepartmentsNameConflict(string departmentName)
+        public static Error DepartmentNameConflict(
+            string departmentName)
         {
             return CommonErrors.Conflict(
                 "department.name.conflict",
-                $"Подразделение с заголовком {departmentName} уже существует");
+                $"Подразделение с названием '{departmentName}' уже существует");
         }
 
-        public static Error DepartmentsSlugConflict(string slug)
+        public static Error DepartmentSlugConflict(string slug)
         {
             return CommonErrors.Conflict(
                 "department.slug.conflict",
-                $"Подразделение с идентификатором {slug} уже существует");
+                $"Подразделение с идентификатором '{slug}' уже существует");
         }
 
         public static Error ActiveDepartmentsNotFound()
         {
             return CommonErrors.NotFound(
-                "active.positions.not_found",
-                "Некоторые подразделения не являются активными или отсутствуют в БД");
+                "active.departments.not.found",
+                "Некоторые подразделения отсутствуют или неактивны");
         }
 
         public static Error UnexpectedDbException()
         {
             return CommonErrors.Db(
-                "get.exists.and.active.from.db.exception",
-                $"Произошла непредвиденная ошибка в процессе проверки активных подразделений в БД");
+                "check.departments.exists.and.active.db.exception",
+                "Ошибка проверки активных подразделений");
         }
     }
 }

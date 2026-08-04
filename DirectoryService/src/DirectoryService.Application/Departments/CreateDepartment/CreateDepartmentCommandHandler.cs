@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using CSharpFunctionalExtensions;
-using DirectoryService.Domain.DepartmentLocations;
+﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using Microsoft.Extensions.Logging;
@@ -9,114 +7,127 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Departments.CreateDepartment;
 
-public class CreateDepartmentCommandHandler(
+public sealed class CreateDepartmentCommandHandler(
     ILocationsRepository locationsRepository,
     IDepartmentsRepository departmentsRepository,
-    ILogger<CreateDepartmentCommandHandler> logger) : ICommandHandler<Guid, CreateDepartmentCommand>
+    ILogger<CreateDepartmentCommandHandler> logger)
+    : ICommandHandler<Guid, CreateDepartmentCommand>
 {
-    public async Task<Result<Guid, Errors>>
-        Handle(CreateDepartmentCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Guid, Errors>> Handle(
+        CreateDepartmentCommand command,
+        CancellationToken cancellationToken)
     {
-        var departmentId = new DepartmentId(Guid.NewGuid());
         var nameResult = DepartmentName.Create(command.Dto.Name);
+
+        if (nameResult.IsFailure)
+        {
+            return nameResult.Error.ToErrors();
+        }
+
         var slugResult = Slug.Create(command.Dto.Name);
 
-        var locationIds = command.Dto.LocationIds.ToList();
+        if (slugResult.IsFailure)
+        {
+            return slugResult.Error.ToErrors();
+        }
 
-        var existsResult = await locationsRepository.ExistsAsync(locationIds, cancellationToken);
-
-        if (existsResult.IsFailure)
-            return existsResult.Error.ToErrors();
-
-        var locations = locationIds
-            .Select(x => new DepartmentLocation(
-                new DepartmentId(Guid.NewGuid()),
-                new LocationId(x)))
+        var locationIds = command.Dto.LocationIds
+            .Distinct()
             .ToList();
 
-        var parentId = command.Dto.ParentId;
+        var locationsExistResult = await locationsRepository.ExistsAsync(
+            locationIds,
+            cancellationToken);
 
-        var createResult = await CreateDepartment(
-            parentId: parentId,
-            name: nameResult.Value,
-            slug: slugResult.Value,
-            locations: locations,
-            cancellationToken: cancellationToken);
+        if (locationsExistResult.IsFailure)
+        {
+            return locationsExistResult.Error.ToErrors();
+        }
+
+        var locations = locationIds
+            .Select(id => new LocationId(id))
+            .ToList();
+
+        var createResult = await CreateDepartmentAsync(
+            command.Dto.ParentId,
+            nameResult.Value,
+            slugResult.Value,
+            locations,
+            cancellationToken);
 
         if (createResult.IsFailure)
         {
             return createResult.Error;
         }
 
-        var addResult = await departmentsRepository.AddAsync(createResult.Value, cancellationToken);
+        var department = createResult.Value;
+
+        var addResult = await departmentsRepository.AddAsync(
+            department,
+            cancellationToken);
 
         if (addResult.IsFailure)
+        {
             return addResult.Error.ToErrors();
+        }
 
-        logger.LogInformation("Создано подразделение с id = {DepartmentId}", departmentId);
+        logger.LogInformation(
+            "Создано подразделение с id = {DepartmentId}",
+            department.Id.Value);
 
-        return departmentId.Value;
+        return department.Id.Value;
     }
 
-    private async Task<Result<Department, Errors>> CreateDepartment(
+    private async Task<Result<Department, Errors>> CreateDepartmentAsync(
         Guid? parentId,
         DepartmentName name,
         Slug slug,
-        IEnumerable<DepartmentLocation> locations,
+        IReadOnlyCollection<LocationId> locationIds,
         CancellationToken cancellationToken)
     {
+        Result<Department, Error> createResult;
+
         if (parentId is null)
         {
-            var createParentResult = Department.CreateParent(
+            createResult = Department.CreateParent(
                 name,
                 slug,
-                locations);
+                locationIds);
+        }
+        else
+        {
+            var parentResult = await departmentsRepository.GetByIdAsync(
+                parentId.Value,
+                cancellationToken);
 
-            if (createParentResult.IsFailure)
+            if (parentResult.IsFailure)
             {
-                return createParentResult.Error.ToErrors();
+                return parentResult.Error.ToErrors();
             }
 
-            return createParentResult.Value;
+            if (parentResult.Value is null)
+            {
+                logger.LogWarning(
+                    "Родительское подразделение с id = {DepartmentId} не найдено",
+                    parentId.Value);
+
+                return DepartmentErrors
+                    .NotFound(parentId.Value)
+                    .ToErrors();
+            }
+
+            createResult = Department.CreateChild(
+                name,
+                slug,
+                parentResult.Value,
+                locationIds);
         }
 
-        var departmentParent = await departmentsRepository
-            .GetByIdAsync(parentId.Value, cancellationToken);
-
-        if (departmentParent.IsFailure)
+        if (createResult.IsFailure)
         {
-            return departmentParent.Error.ToErrors();
+            return createResult.Error.ToErrors();
         }
 
-        if (departmentParent.Value is null)
-        {
-            logger.LogError("Подразделение с id = {Id} не найдено", parentId.Value);
-            return DepartmentErrors.DepartmentNotFound(parentId.Value).ToErrors();
-        }
-
-        var createChildResult = Department.CreateChild(
-            name,
-            slug,
-            departmentParent.Value,
-            locations);
-
-        if (createChildResult.IsFailure)
-        {
-            return createChildResult.Error.ToErrors();
-        }
-
-        return createChildResult.Value;
-    }
-
-    [ExcludeFromCodeCoverage]
-    private static class DepartmentErrors
-    {
-        public static Error DepartmentNotFound(Guid id)
-        {
-            return CommonErrors.NotFound(
-                "department.not.found",
-                $"Подразделение с id = {id} не найдено",
-                id);
-        }
+        return createResult.Value;
     }
 }

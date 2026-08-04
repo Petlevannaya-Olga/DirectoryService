@@ -1,4 +1,8 @@
-﻿using FluentValidation;
+﻿using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Locations;
+using FluentValidation;
+using Primitives;
+using Primitives.Extensions;
 
 namespace DirectoryService.Application.Departments.AddLocation;
 
@@ -9,10 +13,10 @@ public sealed class AddLocationCommandValidator
     {
         RuleFor(command => command.DepartmentId)
             .NotEmpty()
-            .WithMessage("Идентификатор подразделения обязателен");
+            .WithError(CommonErrors.IsEmpty(nameof(DepartmentId)));
 
         RuleFor(command => command.LocationId)
             .NotEmpty()
-            .WithMessage("Идентификатор локации обязателен");
+            .WithError(CommonErrors.IsEmpty(nameof(LocationId)));
     }
 }

@@ -286,7 +286,7 @@ namespace DirectoryService.Infrastructure.Migrations
 
                             b1.HasKey("LocationId");
 
-                            b1.ToTable("locations");
+                            b1.ToTable("locations", (string)null);
 
                             b1
                                 .ToJson("address")

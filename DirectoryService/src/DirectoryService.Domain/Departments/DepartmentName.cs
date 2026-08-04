@@ -18,7 +18,7 @@ public sealed class DepartmentName : ValueObject
     /// <summary>
     /// Значение
     /// </summary>
-    public string Value { get; private set; }
+    public string Value { get; }
 
     private DepartmentName(string value)
     {

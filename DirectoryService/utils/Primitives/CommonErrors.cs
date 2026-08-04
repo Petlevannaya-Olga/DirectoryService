@@ -2,7 +2,12 @@
 
 public static class CommonErrors
 {
-    public static Error None = new(string.Empty, string.Empty, ErrorType.NONE);
+    public static Error IsEmpty(string propertyName) =>
+        new(
+            $"{propertyName.ToLowerInvariant()}.is.empty",
+            $"Значение не задано для {propertyName}",
+            ErrorType.VALIDATION,
+            propertyName);
 
     public static Error IsRequired(string propertyName) =>
         new(
@@ -40,7 +45,7 @@ public static class CommonErrors
             propertyName);
 
     public static Error NotFound(string? code, string message, Guid? id = null)
-        => new(code ?? "record.not.found", message, ErrorType.NOT_FOUND);
+        => new(code ?? "record.not.found", message, ErrorType.NOTFOUND);
 
     public static Error Validation(string? code, string message, string? invalidField = null)
         => new(code ?? "value.is.invalid", message, ErrorType.VALIDATION, invalidField);
@@ -57,10 +62,10 @@ public static class CommonErrors
     public static Error OperationCancelled(string? code)
         => new(code ?? "operation.cancelled", "Операция была отменена", ErrorType.CANCELED);
 
-    public static Error CollectionIsEmpty(string? code)
-        => new(code ?? "array.is.empty", "Массив не может быть пустым", ErrorType.VALIDATION);
+    public static Error CollectionIsEmpty(string? code, string? message)
+        => new(code ?? "array.is.empty", message ?? "Массив не может быть пустым", ErrorType.VALIDATION);
 
-    public static Error CollectionContainsDublicates(string? code = null)
+    public static Error CollectionContainsDuplicates(string? code = null)
         => new(code ?? "collection.contains.dublicates", "Коллекция содержит дубликаты", ErrorType.VALIDATION);
 
     public static Error Inactive(Guid id) =>

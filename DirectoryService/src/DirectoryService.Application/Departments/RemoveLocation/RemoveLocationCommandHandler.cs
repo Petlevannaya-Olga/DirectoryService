@@ -11,7 +11,9 @@ public sealed class RemoveLocationCommandHandler(
     ITransactionManager transactionManager)
     : ICommandHandler<RemoveLocationCommand>
 {
-    public async Task<UnitResult<Errors>> Handle(RemoveLocationCommand command, CancellationToken cancellationToken)
+    public async Task<UnitResult<Errors>> Handle(
+        RemoveLocationCommand command,
+        CancellationToken cancellationToken)
     {
         var locationId = new LocationId(command.LocationId);
 
@@ -25,24 +27,19 @@ public sealed class RemoveLocationCommandHandler(
             return departmentResult.Error.ToErrors();
         }
 
-        if (departmentResult.Value == null)
-        {
-            return CommonErrors
-                .NotFound(
-                    "department.not.found",
-                    $"Подразделение с идентификатором '{command.DepartmentId}' не найдено")
-                .ToErrors();
-        }
+        var department = departmentResult.Value;
 
-        var removeResult =
-            departmentResult.Value.RemoveLocation(locationId);
+        var removeResult = department.RemoveLocation(locationId);
 
         if (removeResult.IsFailure)
         {
             return removeResult.Error.ToErrors();
         }
 
-        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
+        var saveResult =
+            await transactionManager.SaveChangesAsync(
+                cancellationToken);
+
         if (saveResult.IsFailure)
         {
             return saveResult.Error.ToErrors();

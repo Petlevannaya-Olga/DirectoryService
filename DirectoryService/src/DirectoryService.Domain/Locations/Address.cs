@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CSharpFunctionalExtensions;
-using DirectoryService.Contracts;
+using DirectoryService.Contracts.Locations;
 using Primitives;
 
 namespace DirectoryService.Domain.Locations;
@@ -17,32 +17,32 @@ public sealed class Address(
     /// <summary>
     /// Почтовый индекс
     /// </summary>
-    public string PostalCode { get; private set; } = postalCode;
+    public string PostalCode { get; } = postalCode;
 
     /// <summary>
     /// Регион / субъект (область, край, штат)
     /// </summary>
-    public string Region { get; private set; } = region;
+    public string Region { get; } = region;
 
     /// <summary>
     /// Город / населённый пункт
     /// </summary>
-    public string City { get; private set; } = city;
+    public string City { get; } = city;
 
     /// <summary>
     /// Улица
     /// </summary>
-    public string Street { get; private set; } = street;
+    public string Street { get; } = street;
 
     /// <summary>
     /// Дом
     /// </summary>
-    public int House { get; private set; } = house;
+    public int House { get; } = house;
 
     /// <summary>
     /// Квартира / офис
     /// </summary>
-    public int? Apartment { get; private set; } = apartment;
+    public int? Apartment { get; } = apartment;
 
     /// <summary>
     /// Фабричный метод
