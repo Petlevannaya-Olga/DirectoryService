@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Database;
 using DirectoryService.Domain.Locations;
+using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 
@@ -9,7 +10,8 @@ namespace DirectoryService.Application.Departments.AddLocation;
 public sealed class AddLocationCommandHandler(
     IDepartmentsRepository departmentsRepository,
     ILocationsRepository locationsRepository,
-    ITransactionManager transactionManager)
+    ITransactionManager transactionManager,
+    ILogger<AddLocationCommandHandler> logger)
     : ICommandHandler<Guid, AddLocationCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(
@@ -74,6 +76,10 @@ public sealed class AddLocationCommandHandler(
             return commitResult.Error.ToErrors();
         }
 
-        return department.Id.Value;
+        var departmentId = department.Id.Value;
+
+        logger.LogInformation("Локации успешно добавлены к департаменту с id = {DepartmentId}", departmentId);
+
+        return departmentId;
     }
 }

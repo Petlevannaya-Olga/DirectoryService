@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Database;
 using DirectoryService.Domain.Locations;
+using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 
@@ -8,7 +9,8 @@ namespace DirectoryService.Application.Locations.UpdateLocation;
 
 public sealed class UpdateLocationCommandHandler(
     ILocationsRepository locationsRepository,
-    ITransactionManager transactionManager)
+    ITransactionManager transactionManager,
+    ILogger<UpdateLocationCommandHandler> logger)
     : ICommandHandler<Guid, UpdateLocationCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(
@@ -107,6 +109,8 @@ public sealed class UpdateLocationCommandHandler(
             return saveResult.Error.ToErrors();
         }
 
+        logger.LogInformation("Данные локации с id = {LocationId} были обновлены", command.Id);
+        
         return location.Id.Value;
     }
 }
