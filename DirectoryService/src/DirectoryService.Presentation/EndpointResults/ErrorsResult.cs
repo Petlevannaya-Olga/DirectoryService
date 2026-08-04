@@ -2,51 +2,72 @@
 
 namespace DirectoryService.Presentation.EndpointResults;
 
-public sealed class ErrorsResult : IResult
+public sealed class ErrorsResult<TValue> : IResult
 {
     private readonly Errors _errors;
 
     public ErrorsResult(Errors errors)
     {
+        ArgumentNullException.ThrowIfNull(errors);
+
         _errors = errors;
     }
 
     public ErrorsResult(Error error)
+        : this(error.ToErrors())
     {
-        _errors = error;
     }
 
     public Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-        if (!_errors.Any())
+
+        var statusCode = GetStatusCode(_errors);
+        var envelope = Envelope<TValue>.Error(_errors);
+
+        httpContext.Response.StatusCode = statusCode;
+
+        return httpContext.Response.WriteAsJsonAsync(
+            envelope,
+            httpContext.RequestAborted);
+    }
+
+    private static int GetStatusCode(Errors errors)
+    {
+        if (errors.Count == 0)
         {
-            httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            return httpContext.Response.WriteAsJsonAsync(Envelope.Error(_errors));
+            return StatusCodes.Status500InternalServerError;
         }
 
-        var errorTypes = _errors
-            .Select(x => x.Type)
+        var errorTypes = errors
+            .Select(error => error.Type)
             .Distinct()
             .ToList();
 
-        var statusCode = errorTypes.Count > 1
-            ? StatusCodes.Status500InternalServerError
-            : GetStatusCodeForErrorType(errorTypes.First());
+        if (errorTypes.Count != 1)
+        {
+            return StatusCodes.Status500InternalServerError;
+        }
 
-        var envelope = Envelope.Error(_errors);
-        httpContext.Response.StatusCode = statusCode;
-
-        return httpContext.Response.WriteAsJsonAsync(envelope);
+        return GetStatusCodeForErrorType(errorTypes[0]);
     }
 
-    private static int GetStatusCodeForErrorType(ErrorType errorType)
-        =>
-            errorType switch
-            {
-                ErrorType.VALIDATION => StatusCodes.Status400BadRequest,
-                ErrorType.NOTFOUND => StatusCodes.Status404NotFound,
-                ErrorType.CONFLICT => StatusCodes.Status409Conflict,
-                _ => StatusCodes.Status500InternalServerError,
-            };
+    private static int GetStatusCodeForErrorType(
+        ErrorType errorType)
+    {
+        return errorType switch
+        {
+            ErrorType.VALIDATION =>
+                StatusCodes.Status400BadRequest,
+
+            ErrorType.NOTFOUND =>
+                StatusCodes.Status404NotFound,
+
+            ErrorType.CONFLICT =>
+                StatusCodes.Status409Conflict,
+
+            _ =>
+                StatusCodes.Status500InternalServerError
+        };
+    }
 }
