@@ -17,14 +17,23 @@ public sealed class CreatePositionCommandHandler(
         CreatePositionCommand command,
         CancellationToken cancellationToken)
     {
-        var name = PositionName
-            .Create(command.Dto.Name)
-            .Value;
+        var nameResult = PositionName.Create(command.Dto.Name);
 
-        var description = Description
-            .Create(command.Dto.Description)
-            .Value;
+        if (nameResult.IsFailure)
+        {
+            return nameResult.Error.ToErrors();
+        }
 
+        var descriptionResult = Description.Create(command.Dto.Description);
+
+        if (descriptionResult.IsFailure)
+        {
+            return descriptionResult.Error.ToErrors();
+        }
+
+        var name = nameResult.Value;
+        var description = descriptionResult.Value;
+        
         var positionExistsResult =
             await positionsRepository.ExistsAsync(
                 position =>

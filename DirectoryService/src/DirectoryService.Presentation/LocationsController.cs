@@ -15,10 +15,8 @@ public sealed class LocationsController : ControllerBase
 {
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(
-        [FromServices]
-        ICommandHandler<Guid, CreateLocationCommand> commandHandler,
-        [FromBody]
-        CreateLocationDto request,
+        [FromServices] ICommandHandler<Guid, CreateLocationCommand> commandHandler,
+        [FromBody] CreateLocationDto request,
         CancellationToken cancellationToken)
     {
         var command = new CreateLocationCommand(request);
@@ -29,8 +27,7 @@ public sealed class LocationsController : ControllerBase
     }
 
     [HttpGet("{locationId:guid}")]
-    public EndpointResult<GetLocationDto> GetById(
-        [FromRoute] Guid locationId)
+    public EndpointResult<GetLocationDto> GetById([FromRoute] Guid locationId)
     {
         return Result.Success<GetLocationDto, Error>(
             new GetLocationDto("LocationName"));
@@ -44,12 +41,9 @@ public sealed class LocationsController : ControllerBase
 
     [HttpPut("{locationId:guid}")]
     public async Task<EndpointResult<Guid>> Update(
-        [FromServices]
-        ICommandHandler<Guid, UpdateLocationCommand> commandHandler,
-        [FromRoute]
-        Guid locationId,
-        [FromBody]
-        UpdateLocationDto request,
+        [FromServices] ICommandHandler<Guid, UpdateLocationCommand> commandHandler,
+        [FromRoute] Guid locationId,
+        [FromBody] UpdateLocationDto request,
         CancellationToken cancellationToken)
     {
         var command = new UpdateLocationCommand(
@@ -64,8 +58,7 @@ public sealed class LocationsController : ControllerBase
     }
 
     [HttpDelete("{locationId:guid}")]
-    public EndpointResult<Guid> Delete(
-        [FromRoute] Guid locationId)
+    public EndpointResult<Guid> Delete([FromRoute] Guid locationId)
     {
         return Result.Success<Guid, Error>(locationId);
     }

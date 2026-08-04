@@ -17,13 +17,19 @@ public sealed class CreateDepartmentCommandHandler(
         CreateDepartmentCommand command,
         CancellationToken cancellationToken)
     {
-        var name = DepartmentName
-            .Create(command.Dto.Name)
-            .Value;
+        var nameResult = DepartmentName.Create(command.Dto.Name);
 
-        var slug = Slug
-            .Create(command.Dto.Name)
-            .Value;
+        if (nameResult.IsFailure)
+        {
+            return nameResult.Error.ToErrors();
+        }
+
+        var slugResult = Slug.Create(command.Dto.Name);
+
+        if (slugResult.IsFailure)
+        {
+            return slugResult.Error.ToErrors();
+        }
 
         var locationIds = command.Dto.LocationIds
             .Distinct()
@@ -44,8 +50,8 @@ public sealed class CreateDepartmentCommandHandler(
 
         var createResult = await CreateDepartmentAsync(
             command.Dto.ParentId,
-            name,
-            slug,
+            nameResult.Value,
+            slugResult.Value,
             locations,
             cancellationToken);
 

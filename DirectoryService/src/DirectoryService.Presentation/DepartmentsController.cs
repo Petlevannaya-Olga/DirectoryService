@@ -18,10 +18,8 @@ public sealed class DepartmentsController : ControllerBase
 {
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(
-        [FromServices]
-        ICommandHandler<Guid, CreateDepartmentCommand> commandHandler,
-        [FromBody]
-        CreateDepartmentDto request,
+        [FromServices] ICommandHandler<Guid, CreateDepartmentCommand> commandHandler,
+        [FromBody] CreateDepartmentDto request,
         CancellationToken cancellationToken)
     {
         var command = new CreateDepartmentCommand(request);
@@ -32,8 +30,7 @@ public sealed class DepartmentsController : ControllerBase
     }
 
     [HttpGet("{departmentId:guid}")]
-    public EndpointResult<GetDepartmentDto> GetById(
-        [FromRoute] Guid departmentId)
+    public EndpointResult<GetDepartmentDto> GetById([FromRoute] Guid departmentId)
     {
         return Result.Success<GetDepartmentDto, Error>(
             new GetDepartmentDto("DepartmentName"));
@@ -47,12 +44,9 @@ public sealed class DepartmentsController : ControllerBase
 
     [HttpPut("{departmentId:guid}/locations")]
     public async Task<EndpointResult<Guid>> UpdateLocations(
-        [FromServices]
-        ICommandHandler<Guid, UpdateLocationsCommand> commandHandler,
-        [FromRoute]
-        Guid departmentId,
-        [FromBody]
-        UpdateDepartmentLocationsDto request,
+        [FromServices] ICommandHandler<Guid, UpdateLocationsCommand> commandHandler,
+        [FromRoute] Guid departmentId,
+        [FromBody] UpdateDepartmentLocationsDto request,
         CancellationToken cancellationToken)
     {
         var command = new UpdateLocationsCommand(
@@ -66,12 +60,9 @@ public sealed class DepartmentsController : ControllerBase
 
     [HttpPatch("{departmentId:guid}")]
     public async Task<EndpointResult<Guid>> UpdateName(
-        [FromServices]
-        ICommandHandler<Guid, UpdateDepartmentCommand> commandHandler,
-        [FromRoute]
-        Guid departmentId,
-        [FromBody]
-        UpdateDepartmentNameDto request,
+        [FromServices] ICommandHandler<Guid, UpdateDepartmentCommand> commandHandler,
+        [FromRoute] Guid departmentId,
+        [FromBody] UpdateDepartmentNameDto request,
         CancellationToken cancellationToken)
     {
         var command = new UpdateDepartmentCommand(
@@ -92,8 +83,7 @@ public sealed class DepartmentsController : ControllerBase
     }
 
     [HttpDelete("{departmentId:guid}")]
-    public EndpointResult<Guid> Delete(
-        [FromRoute] Guid departmentId)
+    public EndpointResult<Guid> Delete([FromRoute] Guid departmentId)
     {
         return Result.Success<Guid, Error>(departmentId);
     }
@@ -101,12 +91,9 @@ public sealed class DepartmentsController : ControllerBase
     [HttpDelete(
         "{departmentId:guid}/locations/{locationId:guid}")]
     public async Task<EndpointResult> RemoveLocation(
-        [FromServices]
-        ICommandHandler<RemoveLocationCommand> commandHandler,
-        [FromRoute]
-        Guid departmentId,
-        [FromRoute]
-        Guid locationId,
+        [FromServices] ICommandHandler<RemoveLocationCommand> commandHandler,
+        [FromRoute] Guid departmentId,
+        [FromRoute] Guid locationId,
         CancellationToken cancellationToken)
     {
         var command = new RemoveLocationCommand(
@@ -121,12 +108,9 @@ public sealed class DepartmentsController : ControllerBase
     [HttpPut(
         "{departmentId:guid}/locations/{locationId:guid}")]
     public async Task<EndpointResult<Guid>> AddLocation(
-        [FromServices]
-        ICommandHandler<Guid, AddLocationCommand> commandHandler,
-        [FromRoute]
-        Guid departmentId,
-        [FromRoute]
-        Guid locationId,
+        [FromServices] ICommandHandler<Guid, AddLocationCommand> commandHandler,
+        [FromRoute] Guid departmentId,
+        [FromRoute] Guid locationId,
         CancellationToken cancellationToken)
     {
         var command = new AddLocationCommand(

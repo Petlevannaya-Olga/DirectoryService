@@ -28,9 +28,30 @@ public sealed class UpdateLocationCommandHandler(
 
         var location = locationResult.Value;
 
-        var name = LocationName.Create(command.Name).Value;
-        var address = Address.Create(command.Address).Value;
-        var timezone = Timezone.Create(command.Timezone).Value;
+        var locationNameResult = LocationName.Create(command.Name);
+
+        if (locationNameResult.IsFailure)
+        {
+            return locationNameResult.Error.ToErrors();
+        }
+
+        var addressResult = Address.Create(command.Address);
+
+        if (addressResult.IsFailure)
+        {
+            return addressResult.Error.ToErrors();
+        }
+
+        var timezoneResult = Timezone.Create(command.Timezone);
+
+        if (timezoneResult.IsFailure)
+        {
+            return timezoneResult.Error.ToErrors();
+        }
+
+        var name = locationNameResult.Value;
+        var address = addressResult.Value;
+        var timezone = timezoneResult.Value;
 
         var nameExistsResult = await locationsRepository.ExistsAsync(
             otherLocation =>

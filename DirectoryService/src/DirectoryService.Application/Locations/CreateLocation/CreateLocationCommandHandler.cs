@@ -15,18 +15,31 @@ public sealed class CreateLocationCommandHandler(
         CreateLocationCommand command,
         CancellationToken cancellationToken)
     {
-        var locationName = LocationName
-            .Create(command.Dto.Name)
-            .Value;
+        var locationNameResult = LocationName.Create(command.Dto.Name);
 
-        var address = Address
-            .Create(command.Dto.Address)
-            .Value;
+        if (locationNameResult.IsFailure)
+        {
+            return locationNameResult.Error.ToErrors();
+        }
 
-        var timezone = Timezone
-            .Create(command.Dto.Timezone)
-            .Value;
+        var addressResult = Address.Create(command.Dto.Address);
 
+        if (addressResult.IsFailure)
+        {
+            return addressResult.Error.ToErrors();
+        }
+
+        var timezoneResult = Timezone.Create(command.Dto.Timezone);
+
+        if (timezoneResult.IsFailure)
+        {
+            return timezoneResult.Error.ToErrors();
+        }
+
+        var address = addressResult.Value;
+        var locationName = locationNameResult.Value;
+        var timezone = timezoneResult.Value;
+        
         var addressExistsResult = await repository.ExistsAsync(
             location =>
                 location.Address.PostalCode == address.PostalCode &&

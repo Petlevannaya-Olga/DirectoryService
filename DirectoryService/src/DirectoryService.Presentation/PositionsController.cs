@@ -14,10 +14,8 @@ public sealed class PositionsController : ControllerBase
 {
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(
-        [FromServices]
-        ICommandHandler<Guid, CreatePositionCommand> commandHandler,
-        [FromBody]
-        CreatePositionDto request,
+        [FromServices] ICommandHandler<Guid, CreatePositionCommand> commandHandler,
+        [FromBody] CreatePositionDto request,
         CancellationToken cancellationToken)
     {
         var command = new CreatePositionCommand(request);
@@ -28,8 +26,7 @@ public sealed class PositionsController : ControllerBase
     }
 
     [HttpGet("{positionId:guid}")]
-    public EndpointResult<GetPositionDto> GetById(
-        [FromRoute] Guid positionId)
+    public EndpointResult<GetPositionDto> GetById([FromRoute] Guid positionId)
     {
         return Result.Success<GetPositionDto, Error>(
             new GetPositionDto("PositionName"));
@@ -50,8 +47,7 @@ public sealed class PositionsController : ControllerBase
     }
 
     [HttpDelete("{positionId:guid}")]
-    public EndpointResult<Guid> Delete(
-        [FromRoute] Guid positionId)
+    public EndpointResult<Guid> Delete([FromRoute] Guid positionId)
     {
         return Result.Success<Guid, Error>(positionId);
     }

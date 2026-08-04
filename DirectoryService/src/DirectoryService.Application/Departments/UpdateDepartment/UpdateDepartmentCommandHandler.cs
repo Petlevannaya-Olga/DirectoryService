@@ -26,7 +26,13 @@ public sealed class UpdateDepartmentCommandHandler(
         }
 
         var department = departmentResult.Value;
-        var name = DepartmentName.Create(command.Name).Value;
+        var nameResult = DepartmentName.Create(command.Name);
+        if (nameResult.IsFailure)
+        {
+            return nameResult.Error.ToErrors();
+        }
+
+        var name = nameResult.Value;
 
         if (department.Name == name)
         {
