@@ -9,10 +9,12 @@ public sealed class AddLocationCommandValidator
     {
         RuleFor(command => command.DepartmentId)
             .NotEmpty()
+            .WithErrorCode("departmentId.is.empty")
             .WithMessage("Идентификатор подразделения обязателен");
 
         RuleFor(command => command.LocationId)
             .NotEmpty()
+            .WithErrorCode("locationId.is.empty")
             .WithMessage("Идентификатор локации обязателен");
     }
 }

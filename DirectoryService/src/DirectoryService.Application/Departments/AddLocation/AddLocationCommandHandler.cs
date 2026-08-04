@@ -67,7 +67,12 @@ public sealed class AddLocationCommandHandler(
             return saveResult.Error.ToErrors();
         }
 
-        transactionScope.Commit();
+        var commitResult = transactionScope.Commit();
+
+        if (commitResult.IsFailure)
+        {
+            return commitResult.Error.ToErrors();
+        }
 
         return department.Id.Value;
     }
