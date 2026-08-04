@@ -111,6 +111,38 @@ public class LocationsRepository(
         }
     }
 
+    public async Task<Result<bool, Error>> ExistsAsync(
+        Expression<Func<Location, bool>> expression,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var exists = await dbContext
+                .Locations
+                .AnyAsync(expression, cancellationToken);
+
+            return exists;
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning(
+                "Операция проверки существования локации была отменена");
+
+            return CommonErrors.OperationCancelled(
+                "check.location.exists.was.canceled");
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                exception,
+                "Ошибка при проверке существования локации");
+
+            return CommonErrors.Db(
+                "check.location.exists.in.db.exception",
+                "Ошибка при проверке существования локации");
+        }
+    }
+
     public async Task<Result<bool, Error>> ExistsAndActiveAsync(
         IEnumerable<Guid> ids,
         CancellationToken cancellationToken)
@@ -175,7 +207,7 @@ public class LocationsRepository(
 
         return UnitResult.Success<Error>();
     }
-    
+
     public async Task<UnitResult<Error>>
         EnsureExistsAndActiveForUpdateAsync(
             LocationId locationId,

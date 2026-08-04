@@ -15,6 +15,10 @@ public interface ILocationsRepository
 
     Task<Result<bool, Error>> ExistsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken);
 
+    Task<Result<bool, Error>> ExistsAsync(
+        Expression<Func<Location, bool>> predicate,
+        CancellationToken cancellationToken);
+
     Task<Result<bool, Error>> ExistsAndActiveAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken);
 
     Task<UnitResult<Error>> EnsureExistsAndActiveAsync(
