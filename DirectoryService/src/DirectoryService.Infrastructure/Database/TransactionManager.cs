@@ -3,6 +3,7 @@ using DirectoryService.Application.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using Primitives;
 
 namespace DirectoryService.Infrastructure.Database;
@@ -55,10 +56,12 @@ public sealed class TransactionManager(
 
             return UnitResult.Success<Error>();
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException exception)
             when (cancellationToken.IsCancellationRequested)
         {
-            logger.LogInformation("Сохранение изменений было отменено");
+            logger.LogInformation(
+                exception,
+                "Сохранение изменений было отменено");
 
             return UnitResult.Failure(
                 CommonErrors.OperationCancelled(
@@ -68,7 +71,7 @@ public sealed class TransactionManager(
         {
             logger.LogWarning(
                 exception,
-                "При сохранении произошёл конфликт конкурентного изменения");
+                "Конфликт конкурентного изменения данных");
 
             return UnitResult.Failure(
                 CommonErrors.Conflict(
@@ -77,14 +80,15 @@ public sealed class TransactionManager(
         }
         catch (DbUpdateException exception)
         {
-            logger.LogError(
-                exception,
-                "Ошибка базы данных при сохранении изменений");
+            var error = PostgresErrorMapper.Map(exception);
 
-            return UnitResult.Failure(
-                CommonErrors.Failure(
-                    "db.update.failed",
-                    "Не удалось сохранить изменения в базе данных"));
+            logger.LogWarning(
+                exception,
+                "Ошибка сохранения изменений. Код ошибки: {ErrorCode}, ограничение: {ConstraintName}",
+                error.Code,
+                GetConstraintName(exception));
+
+            return UnitResult.Failure(error);
         }
         catch (Exception exception)
         {
@@ -93,9 +97,17 @@ public sealed class TransactionManager(
                 "Не удалось сохранить изменения в базе данных");
 
             return UnitResult.Failure(
-                CommonErrors.Failure(
+                CommonErrors.Db(
                     "db.save.changes.failed",
                     "Не удалось сохранить изменения в базе данных"));
         }
+    }
+
+    private static string? GetConstraintName(
+        DbUpdateException exception)
+    {
+        return exception.InnerException is PostgresException postgresException
+            ? postgresException.ConstraintName
+            : null;
     }
 }
