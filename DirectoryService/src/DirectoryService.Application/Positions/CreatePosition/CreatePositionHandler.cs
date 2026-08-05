@@ -8,11 +8,11 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Positions.CreatePosition;
 
-public sealed class CreatePositionCommandHandler(
+public sealed class CreatePositionHandler(
     IDepartmentsRepository departmentsRepository,
     IPositionsRepository positionsRepository,
     ITransactionManager transactionManager,
-    ILogger<CreatePositionCommandHandler> logger)
+    ILogger<CreatePositionHandler> logger)
     : ICommandHandler<Guid, CreatePositionCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(

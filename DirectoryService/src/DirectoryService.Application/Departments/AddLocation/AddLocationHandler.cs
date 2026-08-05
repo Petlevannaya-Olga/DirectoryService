@@ -7,11 +7,11 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Departments.AddLocation;
 
-public sealed class AddLocationCommandHandler(
+public sealed class AddLocationHandler(
     IDepartmentsRepository departmentsRepository,
     ILocationsRepository locationsRepository,
     ITransactionManager transactionManager,
-    ILogger<AddLocationCommandHandler> logger)
+    ILogger<AddLocationHandler> logger)
     : ICommandHandler<Guid, AddLocationCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(

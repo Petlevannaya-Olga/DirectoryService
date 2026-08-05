@@ -8,11 +8,11 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Departments.CreateDepartment;
 
-public sealed class CreateDepartmentCommandHandler(
+public sealed class CreateDepartmentHandler(
     ILocationsRepository locationsRepository,
     IDepartmentsRepository departmentsRepository,
     ITransactionManager transactionManager,
-    ILogger<CreateDepartmentCommandHandler> logger)
+    ILogger<CreateDepartmentHandler> logger)
     : ICommandHandler<Guid, CreateDepartmentCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(

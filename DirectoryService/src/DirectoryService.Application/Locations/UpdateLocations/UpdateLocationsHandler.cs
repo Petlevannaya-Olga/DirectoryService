@@ -6,11 +6,11 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Locations.UpdateLocations;
 
-public sealed class UpdateLocationsCommandHandler(
+public sealed class UpdateLocationsHandler(
     IDepartmentsRepository departmentsRepository,
     ILocationsRepository locationsRepository,
     ITransactionManager transactionManager,
-    ILogger<UpdateLocationsCommandHandler> logger)
+    ILogger<UpdateLocationsHandler> logger)
     : ICommandHandler<Guid, UpdateLocationsCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(

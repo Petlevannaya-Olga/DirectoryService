@@ -7,10 +7,10 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Departments.UpdateDepartment;
 
-public sealed class UpdateDepartmentCommandHandler(
+public sealed class UpdateDepartmentHandler(
     IDepartmentsRepository departmentsRepository,
     ITransactionManager transactionManager,
-    ILogger<UpdateDepartmentCommandHandler> logger)
+    ILogger<UpdateDepartmentHandler> logger)
     : ICommandHandler<Guid, UpdateDepartmentCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(

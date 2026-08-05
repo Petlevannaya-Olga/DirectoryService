@@ -7,10 +7,10 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Locations.UpdateLocation;
 
-public sealed class UpdateLocationCommandHandler(
+public sealed class UpdateLocationHandler(
     ILocationsRepository locationsRepository,
     ITransactionManager transactionManager,
-    ILogger<UpdateLocationCommandHandler> logger)
+    ILogger<UpdateLocationHandler> logger)
     : ICommandHandler<Guid, UpdateLocationCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(

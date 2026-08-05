@@ -7,10 +7,10 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Departments.RemoveLocation;
 
-public sealed class RemoveLocationCommandHandler(
+public sealed class RemoveLocationHandler(
     IDepartmentsRepository departmentsRepository,
     ITransactionManager transactionManager,
-    ILogger<RemoveLocationCommandHandler> logger)
+    ILogger<RemoveLocationHandler> logger)
     : ICommandHandler<RemoveLocationCommand>
 {
     public async Task<UnitResult<Errors>> Handle(

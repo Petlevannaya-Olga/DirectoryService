@@ -7,10 +7,10 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Locations.CreateLocation;
 
-public sealed class CreateLocationCommandHandler(
+public sealed class CreateLocationHandler(
     ILocationsRepository repository,
     ITransactionManager transactionManager,
-    ILogger<CreateLocationCommandHandler> logger)
+    ILogger<CreateLocationHandler> logger)
     : ICommandHandler<Guid, CreateLocationCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(
