@@ -19,10 +19,7 @@ public sealed class PositionsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var command = new CreatePositionCommand(request);
-
-        return await commandHandler.Handle(
-            command,
-            cancellationToken);
+        return await commandHandler.Handle(command, cancellationToken);
     }
 
     [HttpGet("{positionId:guid}")]

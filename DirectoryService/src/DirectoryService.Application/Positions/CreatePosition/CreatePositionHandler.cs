@@ -35,6 +35,17 @@ public sealed class CreatePositionHandler(
             return descriptionResult.Error.ToErrors();
         }
 
+        var departmentIds = command.Dto.DepartmentIds
+            .Distinct()
+            .ToArray();
+
+        if (departmentIds.Length == 0)
+        {
+            return PositionErrors
+                .DepartmentsRequired()
+                .ToErrors();
+        }
+
         var name = nameResult.Value;
         var description = descriptionResult.Value;
 
@@ -60,10 +71,6 @@ public sealed class CreatePositionHandler(
                 .NameConflict(name.Value)
                 .ToErrors();
         }
-
-        var departmentIds = command.Dto.DepartmentIds
-            .Distinct()
-            .ToArray();
 
         var departmentsResult =
             await departmentsRepository.ExistsAndActive(

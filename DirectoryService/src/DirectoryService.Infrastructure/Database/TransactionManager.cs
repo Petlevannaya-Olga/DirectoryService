@@ -71,7 +71,7 @@ public sealed class TransactionManager(
         {
             logger.LogWarning(
                 exception,
-                "Конфликт конкурентного изменения данных");
+                "Возник конфликт конкурентного изменения данных");
 
             return UnitResult.Failure(
                 CommonErrors.Conflict(
@@ -79,16 +79,29 @@ public sealed class TransactionManager(
                     "Данные были изменены другим пользователем"));
         }
         catch (DbUpdateException exception)
+            when (PostgresErrorMapper.TryMap(
+                exception,
+                out var mappedError))
         {
-            var error = PostgresErrorMapper.Map(exception);
-
             logger.LogWarning(
                 exception,
-                "Ошибка сохранения изменений. Код ошибки: {ErrorCode}, ограничение: {ConstraintName}",
-                error.Code,
-                GetConstraintName(exception));
+                "Нарушено ограничение базы данных "
+                + "{ConstraintName}. Код ошибки: {ErrorCode}",
+                GetConstraintName(exception),
+                mappedError.Code);
 
-            return UnitResult.Failure(error);
+            return UnitResult.Failure(mappedError);
+        }
+        catch (DbUpdateException exception)
+        {
+            logger.LogError(
+                exception,
+                "Ошибка базы данных при сохранении изменений");
+
+            return UnitResult.Failure(
+                CommonErrors.Db(
+                    "db.update.failed",
+                    "Не удалось сохранить изменения в базе данных"));
         }
         catch (Exception exception)
         {
