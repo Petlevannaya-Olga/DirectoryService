@@ -1,5 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Positions.CreatePosition;
+using DirectoryService.Application.Positions.DeletePosition;
+using DirectoryService.Application.Positions.UpdatePositionName;
 using DirectoryService.Contracts.Positions;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +21,7 @@ public sealed class PositionsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var command = new CreatePositionCommand(request);
-
-        return await commandHandler.Handle(
-            command,
-            cancellationToken);
+        return await commandHandler.Handle(command, cancellationToken);
     }
 
     [HttpGet("{positionId:guid}")]
@@ -38,17 +37,24 @@ public sealed class PositionsController : ControllerBase
         return Result.Success<GetPositionDto[], Error>([]);
     }
 
-    [HttpPut("{positionId:guid}")]
-    public EndpointResult<Guid> Update(
-        [FromRoute] Guid positionId,
-        [FromBody] UpdatePositionDto request)
+    [HttpPatch("{id:guid}")]
+    public async Task<EndpointResult<Guid>> UpdateName(
+        [FromServices] ICommandHandler<Guid, UpdatePositionNameCommand> commandHandler,
+        [FromRoute] Guid id,
+        [FromBody] UpdatePositionNameDto dto,
+        CancellationToken cancellationToken)
     {
-        return Result.Success<Guid, Error>(positionId);
+        var command = new UpdatePositionNameCommand(id, dto);
+        return await commandHandler.Handle(command, cancellationToken);
     }
 
-    [HttpDelete("{positionId:guid}")]
-    public EndpointResult<Guid> Delete([FromRoute] Guid positionId)
+    [HttpDelete("{id:guid}")]
+    public async Task<EndpointResult> Delete(
+        [FromServices] ICommandHandler<DeletePositionCommand> commandHandler,
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
     {
-        return Result.Success<Guid, Error>(positionId);
+        var command = new DeletePositionCommand(id);
+        return await commandHandler.Handle(command, cancellationToken);
     }
 }

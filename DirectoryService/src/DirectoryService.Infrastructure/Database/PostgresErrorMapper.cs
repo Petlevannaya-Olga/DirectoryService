@@ -6,62 +6,61 @@ namespace DirectoryService.Infrastructure.Database;
 
 internal static class PostgresErrorMapper
 {
-    public static Error Map(DbUpdateException exception)
+    public static bool TryMap(
+        DbUpdateException exception,
+        out Error error)
     {
-        if (exception.InnerException is not PostgresException postgresException)
+        if (exception.InnerException is not PostgresException
+            {
+                SqlState: PostgresErrorCodes.UniqueViolation,
+                ConstraintName: not null
+            } postgresException)
         {
-            return UnexpectedUpdateError();
+            error = default!;
+            return false;
         }
 
-        return postgresException.SqlState switch
+        var mappedError =
+            postgresException.ConstraintName switch
+            {
+                DatabaseConstraintNames.DepartmentName =>
+                    CommonErrors.Conflict(
+                        "department.name.conflict",
+                        "Подразделение с таким названием уже существует"),
+
+                DatabaseConstraintNames.DepartmentSlug =>
+                    CommonErrors.Conflict(
+                        "department.slug.conflict",
+                        "Подразделение с таким идентификатором уже существует"),
+
+                DatabaseConstraintNames.LocationName =>
+                    CommonErrors.Conflict(
+                        "location.name.conflict",
+                        "Локация с таким названием уже существует"),
+
+                DatabaseConstraintNames.LocationAddress =>
+                    CommonErrors.Conflict(
+                        "location.address.conflict",
+                        "Локация с таким адресом уже существует"),
+
+                DatabaseConstraintNames.PositionActiveName =>
+                    CommonErrors.Conflict(
+                        "position.name.conflict",
+                        "Активная позиция с таким названием уже существует"),
+
+                _ => null
+            };
+
+        if (mappedError is null)
         {
-            PostgresErrorCodes.UniqueViolation =>
-                MapUniqueViolation(postgresException),
-
-            _ => UnexpectedUpdateError()
-        };
-    }
-
-    private static Error MapUniqueViolation(
-        PostgresException exception)
-    {
-        return exception.ConstraintName switch
-        {
-            DatabaseConstraintNames.DepartmentName =>
-                CommonErrors.Conflict(
-                    "department.name.conflict",
-                    "Подразделение с таким названием уже существует"),
-
-            DatabaseConstraintNames.DepartmentSlug =>
-                CommonErrors.Conflict(
-                    "department.slug.conflict",
-                    "Подразделение с таким идентификатором уже существует"),
-
-            DatabaseConstraintNames.LocationName =>
-                CommonErrors.Conflict(
-                    "location.name.conflict",
-                    "Локация с таким названием уже существует"),
-
-            DatabaseConstraintNames.LocationAddress =>
-                CommonErrors.Conflict(
-                    "location.address.conflict",
-                    "Локация с таким адресом уже существует"),
-
-            DatabaseConstraintNames.PositionName =>
-                CommonErrors.Conflict(
-                    "position.name.conflict",
-                    "Позиция с таким названием уже существует"),
-
-            _ => CommonErrors.Conflict(
+            error = CommonErrors.Conflict(
                 "db.unique.constraint.conflict",
-                "Запись с такими данными уже существует")
-        };
-    }
+                "Запись с такими данными уже существует");
 
-    private static Error UnexpectedUpdateError()
-    {
-        return CommonErrors.Db(
-            "db.update.failed",
-            "Не удалось сохранить изменения в базе данных");
+            return true;
+        }
+
+        error = mappedError;
+        return true;
     }
 }

@@ -108,4 +108,54 @@ public sealed class PositionsRepository(
                 "Ошибка получения позиции");
         }
     }
+    
+    public async Task<Result<Position, Error>>
+        GetByIdWithDepartmentsAsync(
+            Guid id,
+            CancellationToken cancellationToken)
+    {
+        try
+        {
+            var positionId = new PositionId(id);
+
+            var position = await dbContext
+                .Positions
+                .Include(item => item.DepartmentPositions)
+                .FirstOrDefaultAsync(
+                    item => item.Id == positionId,
+                    cancellationToken);
+
+            if (position is null)
+            {
+                return CommonErrors.NotFound(
+                    "position.not.found",
+                    $"Позиция с идентификатором '{id}' не найдена",
+                    id);
+            }
+
+            return position;
+        }
+        catch (OperationCanceledException exception)
+            when (cancellationToken.IsCancellationRequested)
+        {
+            logger.LogInformation(
+                exception,
+                "Получение позиции {PositionId} с подразделениями было отменено",
+                id);
+
+            return CommonErrors.OperationCancelled(
+                "get.position.with.departments.was.canceled");
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                exception,
+                "Ошибка получения позиции {PositionId} с подразделениями",
+                id);
+
+            return CommonErrors.Db(
+                "get.position.with.departments.from.db.exception",
+                $"Ошибка получения позиции с идентификатором '{id}'");
+        }
+    }
 }

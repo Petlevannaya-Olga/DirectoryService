@@ -1,6 +1,9 @@
 ﻿using DirectoryService.Application.Departments.AddLocation;
+using DirectoryService.Application.Departments.AddPosition;
 using DirectoryService.Application.Departments.CreateDepartment;
+using DirectoryService.Application.Departments.DeleteDepartment;
 using DirectoryService.Application.Departments.RemoveLocation;
+using DirectoryService.Application.Departments.RemovePosition;
 using DirectoryService.Application.Departments.UpdateDepartment;
 using DirectoryService.Application.Locations.UpdateLocations;
 using DirectoryService.Contracts.Departments;
@@ -82,10 +85,14 @@ public sealed class DepartmentsController : ControllerBase
         return Result.Success<Guid, Error>(departmentId);
     }
 
-    [HttpDelete("{departmentId:guid}")]
-    public EndpointResult<Guid> Delete([FromRoute] Guid departmentId)
+    [HttpDelete("{id:guid}")]
+    public async Task<EndpointResult> Delete(
+        [FromServices] ICommandHandler<DeleteDepartmentCommand> commandHandler,
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
     {
-        return Result.Success<Guid, Error>(departmentId);
+        var command = new DeleteDepartmentCommand(id);
+        return await commandHandler.Handle(command, cancellationToken);
     }
 
     [HttpDelete(
@@ -120,5 +127,27 @@ public sealed class DepartmentsController : ControllerBase
         return await commandHandler.Handle(
             command,
             cancellationToken);
+    }
+    
+    [HttpPost("{departmentId:guid}/positions/{positionId:guid}")]
+    public async Task<EndpointResult<Guid>> AddPosition(
+        [FromServices] ICommandHandler<Guid, AddPositionCommand> commandHandler,
+        [FromRoute] Guid departmentId,
+        [FromRoute] Guid positionId,
+        CancellationToken cancellationToken)
+    {
+        var command = new AddPositionCommand(departmentId, positionId);
+        return await commandHandler.Handle(command, cancellationToken);
+    }
+    
+    [HttpDelete("{departmentId:guid}/positions/{positionId:guid}")]
+    public async Task<EndpointResult> RemovePosition(
+        [FromServices] ICommandHandler<RemovePositionCommand> commandHandler,
+        [FromRoute] Guid departmentId,
+        [FromRoute] Guid positionId,
+        CancellationToken cancellationToken)
+    {
+        var command = new RemovePositionCommand(departmentId, positionId);
+        return await commandHandler.Handle(command, cancellationToken);
     }
 }

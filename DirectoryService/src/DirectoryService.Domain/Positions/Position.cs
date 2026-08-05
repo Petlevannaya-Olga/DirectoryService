@@ -107,4 +107,95 @@ public sealed class Position
             description,
             departments);
     }
+
+    public void UpdateName(PositionName name)
+    {
+        if (Name == name)
+        {
+            return;
+        }
+
+        Name = name;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Deactivate()
+    {
+        if (!IsActive)
+        {
+            return;
+        }
+
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public UnitResult<Error> AddDepartment(
+        DepartmentId departmentId)
+    {
+        var alreadyAssigned =
+            _departmentPositions.Any(item => item.DepartmentId == departmentId);
+
+        if (alreadyAssigned)
+        {
+            return UnitResult.Failure(
+                Errors.DepartmentAlreadyAssigned(
+                    departmentId.Value));
+        }
+
+        var positionDepartment =
+            new DepartmentPosition(departmentId, Id);
+
+        _departmentPositions.Add(positionDepartment);
+
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
+    }
+    
+    public Result<bool, Error> RemoveDepartment(
+        DepartmentId departmentId)
+    {
+        var positionDepartment =
+            _departmentPositions.FirstOrDefault(
+                item => item.DepartmentId == departmentId);
+
+        if (positionDepartment is null)
+        {
+            return false;
+        }
+
+        if (_departmentPositions.Count == 1)
+        {
+            return Errors
+                .LastDepartmentCannotBeRemoved(
+                    departmentId.Value);
+        }
+
+        _departmentPositions.Remove(positionDepartment);
+
+        UpdatedAt = DateTime.UtcNow;
+
+        return true;
+    }
+
+    public static class Errors
+    {
+        public static Error DepartmentAlreadyAssigned(
+            Guid departmentId)
+        {
+            return CommonErrors.Conflict(
+                "position.department.already.assigned",
+                $"Позиция уже привязана к подразделению с идентификатором '{departmentId}'");
+        }
+        
+        public static Error LastDepartmentCannotBeRemoved(
+            Guid departmentId)
+        {
+            return CommonErrors.Validation(
+                "position.last.department.remove.forbidden",
+                "Нельзя отвязать последнее подразделение позиции",
+                "departmentId");
+        }
+    }
 }
