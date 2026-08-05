@@ -5,7 +5,6 @@ using DirectoryService.Application;
 using DirectoryService.Domain.Locations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using Primitives;
 
 namespace DirectoryService.Infrastructure;
@@ -15,70 +14,21 @@ public sealed class LocationsRepository(
     ILogger<LocationsRepository> logger)
     : ILocationsRepository
 {
-    public async Task<Result<Guid, Error>> AddAsync(
+    public Task<Result<Guid, Error>> AddAsync(
         Location location,
         CancellationToken cancellationToken)
     {
-        try
+        if (cancellationToken.IsCancellationRequested)
         {
-            await dbContext.Locations.AddAsync(
-                location,
-                cancellationToken);
-
-            await dbContext.SaveChangesAsync(cancellationToken);
-
-            return location.Id.Value;
+            return Task.FromResult<Result<Guid, Error>>(
+                CommonErrors.OperationCancelled(
+                    "add.location.was.canceled"));
         }
-        catch (DbUpdateException exception)
-            when (exception.InnerException is PostgresException postgresException)
-        {
-            if (postgresException is
-                {
-                    SqlState: PostgresErrorCodes.UniqueViolation,
-                    ConstraintName: not null
-                }
-                && postgresException.ConstraintName.Contains(
-                    "locations_name",
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                logger.LogWarning(
-                    "Локация с названием '{LocationName}' уже существует",
-                    location.Name.Value);
 
-                return Errors.LocationNameConflict(
-                    location.Name.Value);
-            }
+        dbContext.Locations.Add(location);
 
-            logger.LogError(
-                exception,
-                "Ошибка добавления локации '{LocationName}'",
-                location.Name.Value);
-
-            return CommonErrors.Db(
-                "add.location.to.db.exception",
-                $"Ошибка добавления локации '{location.Name.Value}'");
-        }
-        catch (OperationCanceledException exception)
-        {
-            logger.LogWarning(
-                exception,
-                "Операция создания локации '{LocationName}' была отменена",
-                location.Name.Value);
-
-            return CommonErrors.OperationCancelled(
-                "add.location.was.canceled");
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(
-                exception,
-                "Ошибка добавления локации '{LocationName}'",
-                location.Name.Value);
-
-            return CommonErrors.Db(
-                "add.location.to.db.exception",
-                $"Ошибка добавления локации '{location.Name.Value}'");
-        }
+        return Task.FromResult<Result<Guid, Error>>(
+            location.Id.Value);
     }
 
     public async Task<Result<Location, Error>> GetByAsync(
@@ -103,8 +53,9 @@ public sealed class LocationsRepository(
             return location;
         }
         catch (OperationCanceledException exception)
+            when (cancellationToken.IsCancellationRequested)
         {
-            logger.LogWarning(
+            logger.LogInformation(
                 exception,
                 "Операция получения локации была отменена");
 
@@ -132,7 +83,7 @@ public sealed class LocationsRepository(
             var locationIds = ids
                 .Distinct()
                 .Select(id => new LocationId(id))
-                .ToList();
+                .ToArray();
 
             var existingCount = await dbContext
                 .Locations
@@ -140,19 +91,20 @@ public sealed class LocationsRepository(
                     location => locationIds.Contains(location.Id),
                     cancellationToken);
 
-            if (existingCount == locationIds.Count)
+            if (existingCount == locationIds.Length)
             {
                 return true;
             }
 
             logger.LogWarning(
-                "Некоторые локации отсутствуют в БД");
+                "Некоторые локации отсутствуют в базе данных");
 
             return Errors.LocationsNotFound();
         }
         catch (OperationCanceledException exception)
+            when (cancellationToken.IsCancellationRequested)
         {
-            logger.LogWarning(
+            logger.LogInformation(
                 exception,
                 "Операция проверки существования локаций была отменена");
 
@@ -184,8 +136,9 @@ public sealed class LocationsRepository(
             return exists;
         }
         catch (OperationCanceledException exception)
+            when (cancellationToken.IsCancellationRequested)
         {
-            logger.LogWarning(
+            logger.LogInformation(
                 exception,
                 "Операция проверки существования локации была отменена");
 
@@ -213,7 +166,7 @@ public sealed class LocationsRepository(
             var locationIds = ids
                 .Distinct()
                 .Select(id => new LocationId(id))
-                .ToList();
+                .ToArray();
 
             var locations = await dbContext
                 .Locations
@@ -225,10 +178,10 @@ public sealed class LocationsRepository(
                 })
                 .ToListAsync(cancellationToken);
 
-            if (locations.Count != locationIds.Count)
+            if (locations.Count != locationIds.Length)
             {
                 logger.LogWarning(
-                    "Некоторые локации отсутствуют в БД");
+                    "Некоторые локации отсутствуют в базе данных");
 
                 return Errors.LocationsNotFound();
             }
@@ -244,8 +197,9 @@ public sealed class LocationsRepository(
             return true;
         }
         catch (OperationCanceledException exception)
+            when (cancellationToken.IsCancellationRequested)
         {
-            logger.LogWarning(
+            logger.LogInformation(
                 exception,
                 "Операция проверки существования и активности локаций была отменена");
 
@@ -292,8 +246,9 @@ public sealed class LocationsRepository(
             return UnitResult.Success<Error>();
         }
         catch (OperationCanceledException exception)
+            when (cancellationToken.IsCancellationRequested)
         {
-            logger.LogWarning(
+            logger.LogInformation(
                 exception,
                 "Операция проверки локации с id = {LocationId} была отменена",
                 locationId.Value);
@@ -347,8 +302,9 @@ public sealed class LocationsRepository(
             return UnitResult.Success<Error>();
         }
         catch (OperationCanceledException exception)
+            when (cancellationToken.IsCancellationRequested)
         {
-            logger.LogWarning(
+            logger.LogInformation(
                 exception,
                 "Операция блокировки локации с id = {LocationId} была отменена",
                 locationId.Value);
@@ -372,14 +328,6 @@ public sealed class LocationsRepository(
     [ExcludeFromCodeCoverage]
     private static class Errors
     {
-        public static Error LocationNameConflict(
-            string locationName)
-        {
-            return CommonErrors.Conflict(
-                "location.name.conflict",
-                $"Локация с названием '{locationName}' уже существует");
-        }
-
         public static Error LocationsNotFound()
         {
             return CommonErrors.NotFound(
@@ -398,7 +346,7 @@ public sealed class LocationsRepository(
         {
             return CommonErrors.Db(
                 "check.locations.exists.db.exception",
-                "Ошибка проверки существования локаций в БД");
+                "Ошибка проверки существования локаций в базе данных");
         }
 
         public static Error LocationNotFound(Guid locationId)

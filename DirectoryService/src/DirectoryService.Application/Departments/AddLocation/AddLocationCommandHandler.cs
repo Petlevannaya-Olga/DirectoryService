@@ -29,7 +29,7 @@ public sealed class AddLocationCommandHandler(
             return transactionResult.Error.ToErrors();
         }
 
-        using var transactionScope = transactionResult.Value;
+        await using var transactionScope = transactionResult.Value;
 
         var locationResult =
             await locationsRepository.EnsureExistsAndActiveForUpdateAsync(
@@ -69,7 +69,7 @@ public sealed class AddLocationCommandHandler(
             return saveResult.Error.ToErrors();
         }
 
-        var commitResult = transactionScope.Commit();
+        var commitResult = await transactionScope.CommitAsync(cancellationToken);
 
         if (commitResult.IsFailure)
         {

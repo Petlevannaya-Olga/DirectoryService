@@ -1,11 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application;
 using DirectoryService.Domain.Positions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using Primitives;
 
 namespace DirectoryService.Infrastructure;
@@ -15,70 +13,21 @@ public sealed class PositionsRepository(
     ILogger<PositionsRepository> logger)
     : IPositionsRepository
 {
-    public async Task<Result<Guid, Error>> AddAsync(
+    public Task<Result<Guid, Error>> AddAsync(
         Position position,
         CancellationToken cancellationToken)
     {
-        try
+        if (cancellationToken.IsCancellationRequested)
         {
-            await dbContext.Positions.AddAsync(
-                position,
-                cancellationToken);
-
-            await dbContext.SaveChangesAsync(cancellationToken);
-
-            return position.Id.Value;
+            return Task.FromResult<Result<Guid, Error>>(
+                CommonErrors.OperationCancelled(
+                    "add.position.was.canceled"));
         }
-        catch (DbUpdateException exception)
-            when (exception.InnerException is PostgresException postgresException)
-        {
-            if (postgresException is
-                {
-                    SqlState: PostgresErrorCodes.UniqueViolation,
-                    ConstraintName: not null
-                }
-                && postgresException.ConstraintName.Contains(
-                    "positions_name",
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                logger.LogWarning(
-                    "Позиция с названием '{PositionName}' уже существует",
-                    position.Name.Value);
 
-                return Errors.PositionNameConflict(
-                    position.Name.Value);
-            }
+        dbContext.Positions.Add(position);
 
-            logger.LogError(
-                exception,
-                "Ошибка добавления позиции '{PositionName}'",
-                position.Name.Value);
-
-            return CommonErrors.Db(
-                "add.position.to.db.exception",
-                $"Ошибка добавления позиции '{position.Name.Value}'");
-        }
-        catch (OperationCanceledException exception)
-        {
-            logger.LogWarning(
-                exception,
-                "Операция создания позиции '{PositionName}' была отменена",
-                position.Name.Value);
-
-            return CommonErrors.OperationCancelled(
-                "add.position.was.canceled");
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(
-                exception,
-                "Ошибка добавления позиции '{PositionName}'",
-                position.Name.Value);
-
-            return CommonErrors.Db(
-                "add.position.to.db.exception",
-                $"Ошибка добавления позиции '{position.Name.Value}'");
-        }
+        return Task.FromResult<Result<Guid, Error>>(
+            position.Id.Value);
     }
 
     public async Task<Result<bool, Error>> ExistsAsync(
@@ -96,8 +45,9 @@ public sealed class PositionsRepository(
             return exists;
         }
         catch (OperationCanceledException exception)
+            when (cancellationToken.IsCancellationRequested)
         {
-            logger.LogWarning(
+            logger.LogInformation(
                 exception,
                 "Операция проверки существования позиции была отменена");
 
@@ -138,8 +88,9 @@ public sealed class PositionsRepository(
             return position;
         }
         catch (OperationCanceledException exception)
+            when (cancellationToken.IsCancellationRequested)
         {
-            logger.LogWarning(
+            logger.LogInformation(
                 exception,
                 "Операция получения позиции была отменена");
 
@@ -155,18 +106,6 @@ public sealed class PositionsRepository(
             return CommonErrors.Db(
                 "get.position.from.db.exception",
                 "Ошибка получения позиции");
-        }
-    }
-
-    [ExcludeFromCodeCoverage]
-    private static class Errors
-    {
-        public static Error PositionNameConflict(
-            string positionName)
-        {
-            return CommonErrors.Conflict(
-                "position.name.conflict",
-                $"Позиция с названием '{positionName}' уже существует");
         }
     }
 }
