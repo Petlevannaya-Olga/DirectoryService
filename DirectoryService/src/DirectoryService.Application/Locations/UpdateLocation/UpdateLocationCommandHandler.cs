@@ -17,24 +17,11 @@ public sealed class UpdateLocationCommandHandler(
         UpdateLocationCommand command,
         CancellationToken cancellationToken)
     {
-        var locationId = new LocationId(command.Id);
+        var nameResult = LocationName.Create(command.Name);
 
-        var locationResult = await locationsRepository.GetByAsync(
-            location => location.Id == locationId,
-            cancellationToken);
-
-        if (locationResult.IsFailure)
+        if (nameResult.IsFailure)
         {
-            return locationResult.Error.ToErrors();
-        }
-
-        var location = locationResult.Value;
-
-        var locationNameResult = LocationName.Create(command.Name);
-
-        if (locationNameResult.IsFailure)
-        {
-            return locationNameResult.Error.ToErrors();
+            return nameResult.Error.ToErrors();
         }
 
         var addressResult = Address.Create(command.Address);
@@ -51,49 +38,79 @@ public sealed class UpdateLocationCommandHandler(
             return timezoneResult.Error.ToErrors();
         }
 
-        var name = locationNameResult.Value;
+        var locationId = new LocationId(command.Id);
+        var name = nameResult.Value;
         var address = addressResult.Value;
         var timezone = timezoneResult.Value;
 
-        var nameExistsResult = await locationsRepository.ExistsAsync(
-            otherLocation =>
-                otherLocation.Id != locationId &&
-                otherLocation.Name == name,
-            cancellationToken);
+        var locationResult =
+            await locationsRepository.GetByAsync(
+                location => location.Id == locationId,
+                cancellationToken);
 
-        if (nameExistsResult.IsFailure)
+        if (locationResult.IsFailure)
         {
-            return nameExistsResult.Error.ToErrors();
+            return locationResult.Error.ToErrors();
         }
 
-        if (nameExistsResult.Value)
+        var location = locationResult.Value;
+
+        var nameChanged = location.Name != name;
+        var addressChanged = location.Address != address;
+        var timezoneChanged = location.Timezone != timezone;
+
+        if (!nameChanged && !addressChanged && !timezoneChanged)
         {
-            return LocationErrors
-                .NameConflict()
-                .ToErrors();
+            return location.Id.Value;
         }
 
-        var addressExistsResult = await locationsRepository.ExistsAsync(
-            otherLocation =>
-                otherLocation.Id != locationId &&
-                otherLocation.Address.PostalCode == address.PostalCode &&
-                otherLocation.Address.City == address.City &&
-                otherLocation.Address.Region == address.Region &&
-                otherLocation.Address.Street == address.Street &&
-                otherLocation.Address.House == address.House &&
-                otherLocation.Address.Apartment == address.Apartment,
-            cancellationToken);
-
-        if (addressExistsResult.IsFailure)
+        if (nameChanged)
         {
-            return addressExistsResult.Error.ToErrors();
+            var nameExistsResult =
+                await locationsRepository.ExistsAsync(
+                    otherLocation =>
+                        otherLocation.Id != locationId &&
+                        otherLocation.Name == name,
+                    cancellationToken);
+
+            if (nameExistsResult.IsFailure)
+            {
+                return nameExistsResult.Error.ToErrors();
+            }
+
+            if (nameExistsResult.Value)
+            {
+                return LocationErrors
+                    .NameConflict()
+                    .ToErrors();
+            }
         }
 
-        if (addressExistsResult.Value)
+        if (addressChanged)
         {
-            return LocationErrors
-                .AddressConflict()
-                .ToErrors();
+            var addressExistsResult =
+                await locationsRepository.ExistsAsync(
+                    otherLocation =>
+                        otherLocation.Id != locationId &&
+                        otherLocation.Address.PostalCode == address.PostalCode &&
+                        otherLocation.Address.City == address.City &&
+                        otherLocation.Address.Region == address.Region &&
+                        otherLocation.Address.Street == address.Street &&
+                        otherLocation.Address.House == address.House &&
+                        otherLocation.Address.Apartment == address.Apartment,
+                    cancellationToken);
+
+            if (addressExistsResult.IsFailure)
+            {
+                return addressExistsResult.Error.ToErrors();
+            }
+
+            if (addressExistsResult.Value)
+            {
+                return LocationErrors
+                    .AddressConflict()
+                    .ToErrors();
+            }
         }
 
         location.Update(
@@ -101,16 +118,19 @@ public sealed class UpdateLocationCommandHandler(
             address,
             timezone);
 
-        var saveResult = await transactionManager.SaveChangesAsync(
-            cancellationToken);
+        var saveResult =
+            await transactionManager.SaveChangesAsync(
+                cancellationToken);
 
         if (saveResult.IsFailure)
         {
             return saveResult.Error.ToErrors();
         }
 
-        logger.LogInformation("Данные локации с id = {LocationId} были обновлены", command.Id);
-        
+        logger.LogInformation(
+            "Данные локации {LocationId} были обновлены",
+            location.Id.Value);
+
         return location.Id.Value;
     }
 }

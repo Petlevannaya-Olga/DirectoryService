@@ -27,13 +27,15 @@ public sealed class UpdateDepartmentCommandHandler(
             return departmentResult.Error.ToErrors();
         }
 
-        var department = departmentResult.Value;
-        var nameResult = DepartmentName.Create(command.Name);
+        var nameResult =
+            DepartmentName.Create(command.Name);
+
         if (nameResult.IsFailure)
         {
             return nameResult.Error.ToErrors();
         }
 
+        var department = departmentResult.Value;
         var name = nameResult.Value;
 
         if (department.Name == name)
@@ -52,7 +54,9 @@ public sealed class UpdateDepartmentCommandHandler(
             return saveResult.Error.ToErrors();
         }
 
-        logger.LogInformation("Данные департамента с id = {DepartmentId} были обновлены", command.DepartmentId);
+        logger.LogInformation(
+            "Данные подразделения {DepartmentId} были обновлены",
+            department.Id.Value);
 
         return department.Id.Value;
     }

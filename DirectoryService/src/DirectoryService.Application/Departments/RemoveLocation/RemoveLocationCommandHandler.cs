@@ -31,7 +31,8 @@ public sealed class RemoveLocationCommandHandler(
 
         var department = departmentResult.Value;
 
-        var removeResult = department.RemoveLocation(locationId);
+        var removeResult =
+            department.RemoveLocation(locationId);
 
         if (removeResult.IsFailure)
         {
@@ -47,8 +48,11 @@ public sealed class RemoveLocationCommandHandler(
             return saveResult.Error.ToErrors();
         }
 
-        logger.LogInformation("Локация с id = {LocationId} успешно удалена", command.LocationId);
-        
+        logger.LogInformation(
+            "Локация {LocationId} удалена из подразделения {DepartmentId}",
+            command.LocationId,
+            command.DepartmentId);
+
         return UnitResult.Success<Errors>();
     }
 }

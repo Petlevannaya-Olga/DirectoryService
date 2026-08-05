@@ -29,7 +29,8 @@ public sealed class AddLocationCommandHandler(
             return transactionResult.Error.ToErrors();
         }
 
-        await using var transactionScope = transactionResult.Value;
+        await using var transaction =
+            transactionResult.Value;
 
         var locationResult =
             await locationsRepository.EnsureExistsAndActiveForUpdateAsync(
@@ -53,7 +54,8 @@ public sealed class AddLocationCommandHandler(
 
         var department = departmentResult.Value;
 
-        var addLocationResult = department.AddLocation(locationId);
+        var addLocationResult =
+            department.AddLocation(locationId);
 
         if (addLocationResult.IsFailure)
         {
@@ -69,7 +71,8 @@ public sealed class AddLocationCommandHandler(
             return saveResult.Error.ToErrors();
         }
 
-        var commitResult = await transactionScope.CommitAsync(cancellationToken);
+        var commitResult =
+            await transaction.CommitAsync(cancellationToken);
 
         if (commitResult.IsFailure)
         {
@@ -78,7 +81,10 @@ public sealed class AddLocationCommandHandler(
 
         var departmentId = department.Id.Value;
 
-        logger.LogInformation("Локации успешно добавлены к департаменту с id = {DepartmentId}", departmentId);
+        logger.LogInformation(
+            "Локация {LocationId} успешно добавлена к подразделению {DepartmentId}",
+            locationId.Value,
+            departmentId);
 
         return departmentId;
     }

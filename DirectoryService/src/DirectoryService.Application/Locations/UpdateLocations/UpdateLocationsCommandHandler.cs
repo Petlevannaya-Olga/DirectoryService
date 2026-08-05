@@ -17,6 +17,10 @@ public sealed class UpdateLocationsCommandHandler(
         UpdateLocationsCommand command,
         CancellationToken cancellationToken)
     {
+        var locationIds = command.LocationIds
+            .Distinct()
+            .ToArray();
+
         var departmentResult =
             await departmentsRepository.GetByIdWithLocationsAsync(
                 command.DepartmentId,
@@ -32,7 +36,7 @@ public sealed class UpdateLocationsCommandHandler(
         if (!department.IsActive)
         {
             logger.LogWarning(
-                "Подразделение с id = {DepartmentId} неактивно",
+                "Подразделение {DepartmentId} неактивно",
                 department.Id.Value);
 
             return CommonErrors
@@ -42,7 +46,7 @@ public sealed class UpdateLocationsCommandHandler(
 
         var locationsResult =
             await locationsRepository.ExistsAndActiveAsync(
-                command.LocationIds,
+                locationIds,
                 cancellationToken);
 
         if (locationsResult.IsFailure)
@@ -50,7 +54,7 @@ public sealed class UpdateLocationsCommandHandler(
             return locationsResult.Error.ToErrors();
         }
 
-        department.UpdateLocations(command.LocationIds);
+        department.UpdateLocations(locationIds);
 
         var saveResult =
             await transactionManager.SaveChangesAsync(
@@ -58,14 +62,12 @@ public sealed class UpdateLocationsCommandHandler(
 
         if (saveResult.IsFailure)
         {
-            logger.LogError(
-                "Не удалось обновить локации подразделения с id = {DepartmentId}",
-                department.Id.Value);
-
             return saveResult.Error.ToErrors();
         }
 
-        logger.LogInformation("Локации подразделения с id = {DepartmentId} успешно обновлены", command.DepartmentId);
+        logger.LogInformation(
+            "Локации подразделения {DepartmentId} успешно обновлены",
+            department.Id.Value);
 
         return department.Id.Value;
     }
