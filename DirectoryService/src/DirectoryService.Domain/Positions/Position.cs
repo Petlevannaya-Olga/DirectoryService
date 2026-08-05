@@ -118,7 +118,7 @@ public sealed class Position
         Name = name;
         UpdatedAt = DateTime.UtcNow;
     }
-    
+
     public void Deactivate()
     {
         if (!IsActive)
@@ -128,5 +128,39 @@ public sealed class Position
 
         IsActive = false;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public UnitResult<Error> AddDepartment(
+        DepartmentId departmentId)
+    {
+        var alreadyAssigned =
+            _departmentPositions.Any(item => item.DepartmentId == departmentId);
+
+        if (alreadyAssigned)
+        {
+            return UnitResult.Failure(
+                Errors.DepartmentAlreadyAssigned(
+                    departmentId.Value));
+        }
+
+        var positionDepartment =
+            new DepartmentPosition(departmentId, Id);
+
+        _departmentPositions.Add(positionDepartment);
+
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
+    }
+
+    public static class Errors
+    {
+        public static Error DepartmentAlreadyAssigned(
+            Guid departmentId)
+        {
+            return CommonErrors.Conflict(
+                "position.department.already.assigned",
+                $"Позиция уже привязана к подразделению с идентификатором '{departmentId}'");
+        }
     }
 }

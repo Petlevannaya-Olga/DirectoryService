@@ -9,9 +9,14 @@ public interface IPositionsRepository
 {
     Task<Result<Guid, Error>> AddAsync(Position position, CancellationToken cancellationToken);
 
-    Task<Result<Position, Error>> GetByAsync(Expression<Func<Position, bool>> expression, CancellationToken cancellationToken);
-    
+    Task<Result<Position, Error>> GetByAsync(Expression<Func<Position, bool>> expression,
+        CancellationToken cancellationToken);
+
     Task<Result<bool, Error>> ExistsAsync(
         Expression<Func<Position, bool>> expression,
+        CancellationToken cancellationToken);
+
+    Task<Result<Position, Error>> GetByIdWithDepartmentsAsync(
+        Guid id,
         CancellationToken cancellationToken);
 }

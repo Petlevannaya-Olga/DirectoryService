@@ -1,4 +1,5 @@
 ﻿using DirectoryService.Application.Departments.AddLocation;
+using DirectoryService.Application.Departments.AddPosition;
 using DirectoryService.Application.Departments.CreateDepartment;
 using DirectoryService.Application.Departments.DeleteDepartment;
 using DirectoryService.Application.Departments.RemoveLocation;
@@ -125,5 +126,16 @@ public sealed class DepartmentsController : ControllerBase
         return await commandHandler.Handle(
             command,
             cancellationToken);
+    }
+    
+    [HttpPost("{departmentId:guid}/positions/{positionId:guid}")]
+    public async Task<EndpointResult<Guid>> AddPosition(
+        [FromServices] ICommandHandler<Guid, AddPositionCommand> commandHandler,
+        [FromRoute] Guid departmentId,
+        [FromRoute] Guid positionId,
+        CancellationToken cancellationToken)
+    {
+        var command = new AddPositionCommand(departmentId, positionId);
+        return await commandHandler.Handle(command, cancellationToken);
     }
 }
