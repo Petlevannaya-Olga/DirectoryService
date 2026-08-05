@@ -1,5 +1,6 @@
 ﻿using DirectoryService.Application.Departments.AddLocation;
 using DirectoryService.Application.Departments.CreateDepartment;
+using DirectoryService.Application.Departments.DeleteDepartment;
 using DirectoryService.Application.Departments.RemoveLocation;
 using DirectoryService.Application.Departments.UpdateDepartment;
 using DirectoryService.Application.Locations.UpdateLocations;
@@ -82,10 +83,14 @@ public sealed class DepartmentsController : ControllerBase
         return Result.Success<Guid, Error>(departmentId);
     }
 
-    [HttpDelete("{departmentId:guid}")]
-    public EndpointResult<Guid> Delete([FromRoute] Guid departmentId)
+    [HttpDelete("{id:guid}")]
+    public async Task<EndpointResult> Delete(
+        [FromServices] ICommandHandler<DeleteDepartmentCommand> commandHandler,
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
     {
-        return Result.Success<Guid, Error>(departmentId);
+        var command = new DeleteDepartmentCommand(id);
+        return await commandHandler.Handle(command, cancellationToken);
     }
 
     [HttpDelete(

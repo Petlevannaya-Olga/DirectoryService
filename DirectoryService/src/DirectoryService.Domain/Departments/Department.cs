@@ -292,6 +292,17 @@ public sealed class Department
         return UnitResult.Success<Error>();
     }
 
+    public void Deactivate()
+    {
+        if (!IsActive)
+        {
+            return;
+        }
+
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     private static class Errors
     {
         public static Error DepartmentLocationAlreadyExists(
