@@ -107,4 +107,15 @@ public sealed class Position
             description,
             departments);
     }
+
+    public void UpdateName(PositionName name)
+    {
+        if (Name == name)
+        {
+            return;
+        }
+
+        Name = name;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

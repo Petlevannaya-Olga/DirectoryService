@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Positions.CreatePosition;
+using DirectoryService.Application.Positions.UpdatePositionName;
 using DirectoryService.Contracts.Positions;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
@@ -35,12 +36,15 @@ public sealed class PositionsController : ControllerBase
         return Result.Success<GetPositionDto[], Error>([]);
     }
 
-    [HttpPut("{positionId:guid}")]
-    public EndpointResult<Guid> Update(
-        [FromRoute] Guid positionId,
-        [FromBody] UpdatePositionDto request)
+    [HttpPatch("{id:guid}")]
+    public async Task<EndpointResult<Guid>> UpdateName(
+        [FromServices] ICommandHandler<Guid, UpdatePositionNameCommand> commandHandler,
+        [FromRoute] Guid id,
+        [FromBody] UpdatePositionNameDto dto,
+        CancellationToken cancellationToken)
     {
-        return Result.Success<Guid, Error>(positionId);
+        var command = new UpdatePositionNameCommand(id, dto);
+        return await commandHandler.Handle(command, cancellationToken);
     }
 
     [HttpDelete("{positionId:guid}")]
