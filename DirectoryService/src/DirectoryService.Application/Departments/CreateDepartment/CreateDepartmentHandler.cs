@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Database;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using Microsoft.Extensions.Logging;
@@ -7,24 +8,27 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Departments.CreateDepartment;
 
-public sealed class CreateDepartmentCommandHandler(
+public sealed class CreateDepartmentHandler(
     ILocationsRepository locationsRepository,
     IDepartmentsRepository departmentsRepository,
-    ILogger<CreateDepartmentCommandHandler> logger)
+    ITransactionManager transactionManager,
+    ILogger<CreateDepartmentHandler> logger)
     : ICommandHandler<Guid, CreateDepartmentCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(
         CreateDepartmentCommand command,
         CancellationToken cancellationToken)
     {
-        var nameResult = DepartmentName.Create(command.Dto.Name);
+        var nameResult = DepartmentName.Create(
+            command.Dto.Name);
 
         if (nameResult.IsFailure)
         {
             return nameResult.Error.ToErrors();
         }
 
-        var slugResult = Slug.Create(command.Dto.Name);
+        var slugResult = Slug.Create(
+            command.Dto.Name);
 
         if (slugResult.IsFailure)
         {
@@ -35,9 +39,10 @@ public sealed class CreateDepartmentCommandHandler(
             .Distinct()
             .ToList();
 
-        var locationsExistResult = await locationsRepository.ExistsAsync(
-            locationIds,
-            cancellationToken);
+        var locationsExistResult =
+            await locationsRepository.ExistsAsync(
+                locationIds,
+                cancellationToken);
 
         if (locationsExistResult.IsFailure)
         {
@@ -62,13 +67,23 @@ public sealed class CreateDepartmentCommandHandler(
 
         var department = createResult.Value;
 
-        var addResult = await departmentsRepository.AddAsync(
-            department,
-            cancellationToken);
+        var addResult =
+            await departmentsRepository.AddAsync(
+                department,
+                cancellationToken);
 
         if (addResult.IsFailure)
         {
             return addResult.Error.ToErrors();
+        }
+
+        var saveResult =
+            await transactionManager.SaveChangesAsync(
+                cancellationToken);
+
+        if (saveResult.IsFailure)
+        {
+            return saveResult.Error.ToErrors();
         }
 
         logger.LogInformation(
@@ -96,9 +111,10 @@ public sealed class CreateDepartmentCommandHandler(
         }
         else
         {
-            var parentResult = await departmentsRepository.GetByIdAsync(
-                parentId.Value,
-                cancellationToken);
+            var parentResult =
+                await departmentsRepository.GetByIdAsync(
+                    parentId.Value,
+                    cancellationToken);
 
             if (parentResult.IsFailure)
             {

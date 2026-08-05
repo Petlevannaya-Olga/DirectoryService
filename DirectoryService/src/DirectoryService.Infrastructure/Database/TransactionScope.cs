@@ -1,54 +1,102 @@
-﻿using System.Data;
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Database;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Primitives;
 
 namespace DirectoryService.Infrastructure.Database;
 
-public class TransactionScope(IDbTransaction transaction, ILogger<TransactionScope> logger) : ITransactionScope
+public sealed class TransactionScope(
+    IDbContextTransaction transaction,
+    ILogger<TransactionScope> logger)
+    : ITransactionScope
 {
-    public UnitResult<Error> Commit()
+    private bool _isCompleted;
+
+    public async Task<UnitResult<Error>> CommitAsync(
+        CancellationToken cancellationToken)
     {
+        if (_isCompleted)
+        {
+            return UnitResult.Failure(
+                CommonErrors.Failure(
+                    "transaction.already.completed",
+                    "Транзакция уже завершена"));
+        }
+
         try
         {
-            transaction.Commit();
+            await transaction.CommitAsync(cancellationToken);
+
+            _isCompleted = true;
+
             return UnitResult.Success<Error>();
         }
         catch (OperationCanceledException)
+            when (cancellationToken.IsCancellationRequested)
         {
-            logger.LogWarning("Операция была отменена");
-            return CommonErrors.OperationCancelled("commit.operation.cancelled");
+            logger.LogInformation("Фиксация транзакции была отменена");
+
+            return UnitResult.Failure(
+                CommonErrors.OperationCancelled(
+                    "transaction.commit.cancelled"));
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            logger.LogError(e, "Не удалось сохранить транзакцию");
-            return UnitResult.Failure(CommonErrors.Failure(
-                "transaction.commit.failed",
-                "Не удалось сохранить транзакцию"));
+            logger.LogError(
+                exception,
+                "Не удалось зафиксировать транзакцию");
+
+            return UnitResult.Failure(
+                CommonErrors.Failure(
+                    "transaction.commit.failed",
+                    "Не удалось зафиксировать транзакцию"));
         }
     }
 
-    public UnitResult<Error> Rollback()
+    public async Task<UnitResult<Error>> RollbackAsync(
+        CancellationToken cancellationToken)
     {
+        if (_isCompleted)
+        {
+            return UnitResult.Failure(
+                CommonErrors.Failure(
+                    "transaction.already.completed",
+                    "Транзакция уже завершена"));
+        }
+
         try
         {
-            transaction.Rollback();
+            await transaction.RollbackAsync(cancellationToken);
+
+            _isCompleted = true;
+
             return UnitResult.Success<Error>();
         }
         catch (OperationCanceledException)
+            when (cancellationToken.IsCancellationRequested)
         {
-            logger.LogWarning("Операция была отменена");
-            return CommonErrors.OperationCancelled("rollback.operation.cancelled");
+            logger.LogInformation("Откат транзакции был отменён");
+
+            return UnitResult.Failure(
+                CommonErrors.OperationCancelled(
+                    "transaction.rollback.cancelled"));
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            logger.LogError(e, "Не удалось отменить транзакцию");
-            return UnitResult.Failure(CommonErrors.Failure(
-                "transaction.rollback.failed",
-                "Не удалось отменить транзакцию"));
+            logger.LogError(
+                exception,
+                "Не удалось откатить транзакцию");
+
+            return UnitResult.Failure(
+                CommonErrors.Failure(
+                    "transaction.rollback.failed",
+                    "Не удалось откатить транзакцию"));
         }
     }
 
-    public void Dispose() => transaction.Dispose();
+    public async ValueTask DisposeAsync()
+    {
+        await transaction.DisposeAsync();
+    }
 }

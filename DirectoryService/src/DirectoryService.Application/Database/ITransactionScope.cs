@@ -3,9 +3,11 @@ using Primitives;
 
 namespace DirectoryService.Application.Database;
 
-public interface ITransactionScope : IDisposable
+public interface ITransactionScope : IAsyncDisposable
 {
-    UnitResult<Error> Commit();
+    Task<UnitResult<Error>> CommitAsync(
+        CancellationToken cancellationToken);
 
-    UnitResult<Error> Rollback();
+    Task<UnitResult<Error>> RollbackAsync(
+        CancellationToken cancellationToken);
 }

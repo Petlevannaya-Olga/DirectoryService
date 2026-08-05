@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Database;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions;
 using Microsoft.Extensions.Logging;
@@ -7,24 +8,27 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Positions.CreatePosition;
 
-public sealed class CreatePositionCommandHandler(
+public sealed class CreatePositionHandler(
     IDepartmentsRepository departmentsRepository,
     IPositionsRepository positionsRepository,
-    ILogger<CreatePositionCommandHandler> logger)
+    ITransactionManager transactionManager,
+    ILogger<CreatePositionHandler> logger)
     : ICommandHandler<Guid, CreatePositionCommand>
 {
     public async Task<Result<Guid, Errors>> Handle(
         CreatePositionCommand command,
         CancellationToken cancellationToken)
     {
-        var nameResult = PositionName.Create(command.Dto.Name);
+        var nameResult =
+            PositionName.Create(command.Dto.Name);
 
         if (nameResult.IsFailure)
         {
             return nameResult.Error.ToErrors();
         }
 
-        var descriptionResult = Description.Create(command.Dto.Description);
+        var descriptionResult =
+            Description.Create(command.Dto.Description);
 
         if (descriptionResult.IsFailure)
         {
@@ -33,7 +37,7 @@ public sealed class CreatePositionCommandHandler(
 
         var name = nameResult.Value;
         var description = descriptionResult.Value;
-        
+
         var positionExistsResult =
             await positionsRepository.ExistsAsync(
                 position =>
@@ -49,17 +53,17 @@ public sealed class CreatePositionCommandHandler(
         if (positionExistsResult.Value)
         {
             logger.LogWarning(
-                "Активная позиция с названием '{PositionName}' уже существует",
-                command.Dto.Name);
+                "Активная позиция с названием {PositionName} уже существует",
+                name.Value);
 
             return PositionErrors
-                .NameConflict(command.Dto.Name)
+                .NameConflict(name.Value)
                 .ToErrors();
         }
 
         var departmentIds = command.Dto.DepartmentIds
             .Distinct()
-            .ToList();
+            .ToArray();
 
         var departmentsResult =
             await departmentsRepository.ExistsAndActive(
@@ -72,8 +76,8 @@ public sealed class CreatePositionCommandHandler(
         }
 
         var departments = departmentIds
-            .ConvertAll(id => new DepartmentId(id))
-;
+            .Select(id => new DepartmentId(id))
+            .ToArray();
 
         var createResult = Position.Create(
             name,
@@ -87,13 +91,23 @@ public sealed class CreatePositionCommandHandler(
 
         var position = createResult.Value;
 
-        var addResult = await positionsRepository.AddAsync(
-            position,
-            cancellationToken);
+        var addResult =
+            await positionsRepository.AddAsync(
+                position,
+                cancellationToken);
 
         if (addResult.IsFailure)
         {
             return addResult.Error.ToErrors();
+        }
+
+        var saveResult =
+            await transactionManager.SaveChangesAsync(
+                cancellationToken);
+
+        if (saveResult.IsFailure)
+        {
+            return saveResult.Error.ToErrors();
         }
 
         logger.LogInformation(
