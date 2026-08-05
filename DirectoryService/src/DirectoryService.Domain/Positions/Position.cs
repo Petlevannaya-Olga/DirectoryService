@@ -118,4 +118,15 @@ public sealed class Position
         Name = name;
         UpdatedAt = DateTime.UtcNow;
     }
+    
+    public void Deactivate()
+    {
+        if (!IsActive)
+        {
+            return;
+        }
+
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

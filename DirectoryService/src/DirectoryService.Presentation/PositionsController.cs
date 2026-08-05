@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Positions.CreatePosition;
+using DirectoryService.Application.Positions.DeletePosition;
 using DirectoryService.Application.Positions.UpdatePositionName;
 using DirectoryService.Contracts.Positions;
 using DirectoryService.Presentation.EndpointResults;
@@ -47,9 +48,13 @@ public sealed class PositionsController : ControllerBase
         return await commandHandler.Handle(command, cancellationToken);
     }
 
-    [HttpDelete("{positionId:guid}")]
-    public EndpointResult<Guid> Delete([FromRoute] Guid positionId)
+    [HttpDelete("{id:guid}")]
+    public async Task<EndpointResult> Delete(
+        [FromServices] ICommandHandler<DeletePositionCommand> commandHandler,
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
     {
-        return Result.Success<Guid, Error>(positionId);
+        var command = new DeletePositionCommand(id);
+        return await commandHandler.Handle(command, cancellationToken);
     }
 }
