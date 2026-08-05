@@ -3,6 +3,7 @@ using DirectoryService.Application.Departments.AddPosition;
 using DirectoryService.Application.Departments.CreateDepartment;
 using DirectoryService.Application.Departments.DeleteDepartment;
 using DirectoryService.Application.Departments.RemoveLocation;
+using DirectoryService.Application.Departments.RemovePosition;
 using DirectoryService.Application.Departments.UpdateDepartment;
 using DirectoryService.Application.Locations.UpdateLocations;
 using DirectoryService.Contracts.Departments;
@@ -136,6 +137,17 @@ public sealed class DepartmentsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var command = new AddPositionCommand(departmentId, positionId);
+        return await commandHandler.Handle(command, cancellationToken);
+    }
+    
+    [HttpDelete("{departmentId:guid}/positions/{positionId:guid}")]
+    public async Task<EndpointResult> RemovePosition(
+        [FromServices] ICommandHandler<RemovePositionCommand> commandHandler,
+        [FromRoute] Guid departmentId,
+        [FromRoute] Guid positionId,
+        CancellationToken cancellationToken)
+    {
+        var command = new RemovePositionCommand(departmentId, positionId);
         return await commandHandler.Handle(command, cancellationToken);
     }
 }

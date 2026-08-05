@@ -152,6 +152,32 @@ public sealed class Position
 
         return UnitResult.Success<Error>();
     }
+    
+    public Result<bool, Error> RemoveDepartment(
+        DepartmentId departmentId)
+    {
+        var positionDepartment =
+            _departmentPositions.FirstOrDefault(
+                item => item.DepartmentId == departmentId);
+
+        if (positionDepartment is null)
+        {
+            return false;
+        }
+
+        if (_departmentPositions.Count == 1)
+        {
+            return Errors
+                .LastDepartmentCannotBeRemoved(
+                    departmentId.Value);
+        }
+
+        _departmentPositions.Remove(positionDepartment);
+
+        UpdatedAt = DateTime.UtcNow;
+
+        return true;
+    }
 
     public static class Errors
     {
@@ -161,6 +187,15 @@ public sealed class Position
             return CommonErrors.Conflict(
                 "position.department.already.assigned",
                 $"Позиция уже привязана к подразделению с идентификатором '{departmentId}'");
+        }
+        
+        public static Error LastDepartmentCannotBeRemoved(
+            Guid departmentId)
+        {
+            return CommonErrors.Validation(
+                "position.last.department.remove.forbidden",
+                "Нельзя отвязать последнее подразделение позиции",
+                "departmentId");
         }
     }
 }

@@ -4,11 +4,11 @@ using FluentValidation;
 using Primitives;
 using Primitives.Extensions;
 
-namespace DirectoryService.Application.Departments.AddPosition;
+namespace DirectoryService.Application.Departments.RemovePosition;
 
-public class AddPositionValidator : AbstractValidator<AddPositionCommand>
+public class RemovePositionValidator : AbstractValidator<RemovePositionCommand>
 {
-    public AddPositionValidator()
+    public RemovePositionValidator()
     {
         RuleFor(command => command.DepartmentId)
             .NotEmpty()
