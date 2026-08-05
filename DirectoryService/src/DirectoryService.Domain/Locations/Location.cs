@@ -92,4 +92,15 @@ public sealed class Location
         Timezone = timezone;
         UpdatedAt = DateTime.UtcNow;
     }
+    
+    public void Deactivate()
+    {
+        if (!IsActive)
+        {
+            return;
+        }
+
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

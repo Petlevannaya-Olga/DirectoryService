@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Locations.CreateLocation;
+using DirectoryService.Application.Locations.DeleteLocation;
 using DirectoryService.Application.Locations.UpdateLocation;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Presentation.EndpointResults;
@@ -57,9 +58,13 @@ public sealed class LocationsController : ControllerBase
             cancellationToken);
     }
 
-    [HttpDelete("{locationId:guid}")]
-    public EndpointResult<Guid> Delete([FromRoute] Guid locationId)
+    [HttpDelete("{id:guid}")]
+    public async Task<EndpointResult> Delete(
+        [FromServices] ICommandHandler<DeleteLocationCommand> commandHandler,
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
     {
-        return Result.Success<Guid, Error>(locationId);
+        var command = new DeleteLocationCommand(id);
+        return await commandHandler.Handle(command, cancellationToken);
     }
 }
