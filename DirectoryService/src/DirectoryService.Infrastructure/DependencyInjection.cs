@@ -4,6 +4,7 @@ using DirectoryService.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 
 namespace DirectoryService.Infrastructure;
 
@@ -22,6 +23,13 @@ public static class DependencyInjection
         services.AddScoped<IReadDbContext>(
             serviceProvider =>
                 serviceProvider.GetRequiredService<ApplicationDbContext>());
+        
+        services.AddSingleton(
+            NpgsqlDataSource.Create(connectionString));
+
+        services.AddScoped<
+            IReadDbConnectionFactory,
+            NpgsqlReadDbConnectionFactory>();
 
         services.AddScoped<ILocationsRepository, LocationsRepository>();
         services.AddScoped<IPositionsRepository, PositionsRepository>();

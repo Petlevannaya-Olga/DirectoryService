@@ -14,12 +14,13 @@
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
       <PackageReference Include="Scrutor" />
       <PackageReference Include="CSharpFunctionalExtensions" />
+      <PackageReference Include="Dapper" />
+      <PackageReference Include="Npgsql" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="Departments\Commands\" />
       <Folder Include="Locations\Commands\" />
-      <Folder Include="Locations\Queries\" />
     </ItemGroup>
 
 </Project>
