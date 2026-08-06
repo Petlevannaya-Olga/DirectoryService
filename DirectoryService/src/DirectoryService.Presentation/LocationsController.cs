@@ -3,7 +3,9 @@ using DirectoryService.Application.Locations.Commands.CreateLocation;
 using DirectoryService.Application.Locations.Commands.DeleteLocation;
 using DirectoryService.Application.Locations.Commands.UpdateLocation;
 using DirectoryService.Application.Locations.Queries.GetLocationById;
+using DirectoryService.Application.Locations.Queries.GetLocations;
 using DirectoryService.Application.Locations.Queries.GetTopLocations;
+using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
@@ -37,12 +39,6 @@ public sealed class LocationsController : ControllerBase
     {
         var query = new GetLocationByIdQuery(id);
         return await queryHandler.Handle(query, cancellationToken);
-    }
-
-    [HttpGet]
-    public EndpointResult<GetLocationDto[]> GetAll()
-    {
-        return Result.Success<GetLocationDto[], Error>([]);
     }
 
     [HttpPut("{locationId:guid}")]
@@ -79,6 +75,23 @@ public sealed class LocationsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var query = new GetTopLocationsQuery();
+        return await queryHandler.Handle(query, cancellationToken);
+    }
+
+    [HttpGet]
+    public async Task<EndpointResult<PagedResult<LocationSummaryDto>>> GetAll(
+        [FromServices] IQueryHandler<PagedResult<LocationSummaryDto>, GetLocationsQuery> queryHandler,
+        [FromQuery] GetLocationsDto request,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetLocationsQuery(
+            request.Search,
+            request.MinDepartmentCount,
+            request.SortBy,
+            request.SortDir,
+            request.Page,
+            request.PageSize);
+
         return await queryHandler.Handle(query, cancellationToken);
     }
 }

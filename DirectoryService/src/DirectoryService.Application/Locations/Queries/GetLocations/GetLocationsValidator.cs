@@ -1,0 +1,98 @@
+﻿using FluentValidation;
+using Primitives;
+using Primitives.Extensions;
+
+namespace DirectoryService.Application.Locations.Queries.GetLocations;
+
+public sealed class GetLocationsQueryValidator : AbstractValidator<GetLocationsQuery>
+{
+    private const int MAX_SEARCH_LENGTH = 100;
+    private const int MAX_PAGE_SIZE = 100;
+
+    public GetLocationsQueryValidator()
+    {
+        RuleFor(query => query.Search)
+            .MaximumLength(MAX_SEARCH_LENGTH)
+            .WithError(
+                CommonErrors.Validation(
+                    nameof(GetLocationsQuery.Search),
+                    $"Поисковая строка не должна превышать {MAX_SEARCH_LENGTH} символов"));
+
+        RuleFor(query => query.MinDepartmentCount)
+            .GreaterThanOrEqualTo(0)
+            .When(query => query.MinDepartmentCount.HasValue)
+            .WithError(
+                CommonErrors.Validation(
+                    nameof(GetLocationsQuery.MinDepartmentCount),
+                    "Минимальное количество подразделений не может быть отрицательным"));
+
+        RuleFor(query => query.SortBy)
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty()
+            .WithError(CommonErrors.IsRequired(nameof(GetLocationsQuery.SortBy)))
+            .Must(IsAllowedSortField)
+            .WithError(
+                CommonErrors.Validation(
+                    nameof(GetLocationsQuery.SortBy),
+                    "Допустимые значения поля сортировки: name, createdAt, departmentCount"));
+
+        RuleFor(query => query.SortDirection)
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty()
+            .WithError(
+                CommonErrors.IsRequired(
+                    nameof(GetLocationsQuery.SortDirection)))
+            .Must(IsAllowedSortDirection)
+            .WithError(
+                CommonErrors.Validation(
+                    nameof(GetLocationsQuery.SortDirection),
+                    "Допустимые направления сортировки: asc, desc"));
+
+        RuleFor(query => query.Page)
+            .GreaterThanOrEqualTo(1)
+            .WithError(
+                CommonErrors.Validation(
+                    nameof(GetLocationsQuery.Page),
+                    "Номер страницы должен быть больше или равен 1"));
+
+        RuleFor(query => query.PageSize)
+            .InclusiveBetween(1, MAX_PAGE_SIZE)
+            .WithError(
+                CommonErrors.Validation(
+                    nameof(GetLocationsQuery.PageSize),
+                    $"Размер страницы должен находиться в диапазоне от 1 до {MAX_PAGE_SIZE}"));
+
+        RuleFor(query => query)
+            .Must(HasValidOffset)
+            .When(query =>
+                query.Page >= 1 &&
+                query.PageSize is >= 1 and <= MAX_PAGE_SIZE)
+            .WithError(
+                CommonErrors.Validation(
+                    nameof(GetLocationsQuery.Page),
+                    "Запрошен слишком большой номер страницы"));
+    }
+
+    private static bool IsAllowedSortField(string? sortBy)
+    {
+        return sortBy?
+            .Trim()
+            .ToLowerInvariant() is
+            "name" or
+            "createdat" or
+            "departmentcount";
+    }
+
+    private static bool IsAllowedSortDirection(string? sortDirection)
+    {
+        return sortDirection?
+            .Trim()
+            .ToLowerInvariant() is "asc" or "desc";
+    }
+
+    private static bool HasValidOffset(GetLocationsQuery query)
+    {
+        var offset = (long)(query.Page - 1) * query.PageSize;
+        return offset <= int.MaxValue;
+    }
+}
