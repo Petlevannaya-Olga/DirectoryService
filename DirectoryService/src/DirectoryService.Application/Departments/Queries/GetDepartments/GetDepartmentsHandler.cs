@@ -120,23 +120,22 @@ public sealed class GetDepartmentsHandler(
         {
             ("name", "asc") => departments
                 .OrderBy(department => department.Name.Value)
-                .ThenBy(department => department.Id.Value),
+                .ThenBy(department => department.Id),
 
             ("name", "desc") => departments
                 .OrderByDescending(department => department.Name.Value)
-                .ThenBy(department => department.Id.Value),
+                .ThenBy(department => department.Id),
 
             ("createdat", "asc") => departments
                 .OrderBy(department => department.CreatedAt)
-                .ThenBy(department => department.Id.Value),
+                .ThenBy(department => department.Id),
 
             ("createdat", "desc") => departments
                 .OrderByDescending(department => department.CreatedAt)
-                .ThenBy(department => department.Id.Value),
+                .ThenBy(department => department.Id),
 
             _ => throw new InvalidOperationException(
-                $"Неподдерживаемая сортировка: " +
-                $"{sortBy} {sortDirection}")
+                $"Неподдерживаемая сортировка: {sortBy} {sortDirection}")
         };
     }
 

@@ -46,12 +46,6 @@ public sealed class DepartmentsController : ControllerBase
         return await queryHandler.Handle(query, cancellationToken);
     }
 
-    [HttpGet]
-    public EndpointResult<GetDepartmentDto[]> GetAll()
-    {
-        return Result.Success<GetDepartmentDto[], Error>([]);
-    }
-
     [HttpPut("{departmentId:guid}/locations")]
     public async Task<EndpointResult<Guid>> UpdateLocations(
         [FromServices] ICommandHandler<Guid, UpdateLocationsCommand> commandHandler,
@@ -159,7 +153,7 @@ public sealed class DepartmentsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<EndpointResult<PagedResult<DepartmentSummaryDto>>> Get(
+    public async Task<EndpointResult<PagedResult<DepartmentSummaryDto>>> GetAll(
         [FromServices] IQueryHandler<PagedResult<DepartmentSummaryDto>, GetDepartmentsQuery> queryHandler,
         [FromQuery] GetDepartmentsDto request,
         CancellationToken cancellationToken)
