@@ -5,7 +5,7 @@ using DirectoryService.Application.Departments.DeleteDepartment;
 using DirectoryService.Application.Departments.RemoveLocation;
 using DirectoryService.Application.Departments.RemovePosition;
 using DirectoryService.Application.Departments.UpdateDepartment;
-using DirectoryService.Application.Locations.UpdateLocations;
+using DirectoryService.Application.Locations.Commands.UpdateLocations;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;

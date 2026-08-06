@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 
-namespace DirectoryService.Application.Locations.UpdateLocation;
+namespace DirectoryService.Application.Locations.Commands.UpdateLocation;
 
 public sealed class UpdateLocationHandler(
     ILocationsRepository locationsRepository,
@@ -24,7 +24,7 @@ public sealed class UpdateLocationHandler(
             return nameResult.Error.ToErrors();
         }
 
-        var addressResult = Address.Create(command.Address);
+        var addressResult = Address.Create(command.LocationAddress);
 
         if (addressResult.IsFailure)
         {

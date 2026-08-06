@@ -3,7 +3,7 @@ using FluentValidation;
 using Primitives;
 using Primitives.Extensions;
 
-namespace DirectoryService.Application.Locations.UpdateLocation;
+namespace DirectoryService.Application.Locations.Commands.UpdateLocation;
 
 public sealed class UpdateLocationCommandValidator
     : AbstractValidator<UpdateLocationCommand>
@@ -17,7 +17,7 @@ public sealed class UpdateLocationCommandValidator
         RuleFor(c => c.Name)
             .MustBeValueObject(LocationName.Create);
 
-        RuleFor(c => c.Address)
+        RuleFor(c => c.LocationAddress)
             .MustBeValueObject(Address.Create);
 
         RuleFor(command => command.Timezone)

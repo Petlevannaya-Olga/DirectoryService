@@ -1,7 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
-using DirectoryService.Application.Locations.CreateLocation;
-using DirectoryService.Application.Locations.DeleteLocation;
-using DirectoryService.Application.Locations.UpdateLocation;
+using DirectoryService.Application.Locations.Commands.CreateLocation;
+using DirectoryService.Application.Locations.Commands.DeleteLocation;
+using DirectoryService.Application.Locations.Commands.UpdateLocation;
+using DirectoryService.Application.Locations.Queries.GetLocationById;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
@@ -27,11 +28,14 @@ public sealed class LocationsController : ControllerBase
             cancellationToken);
     }
 
-    [HttpGet("{locationId:guid}")]
-    public EndpointResult<GetLocationDto> GetById([FromRoute] Guid locationId)
+    [HttpGet("{id:guid}")]
+    public async Task<EndpointResult<GetLocationDto>> GetById(
+        [FromServices] IQueryHandler<Result<GetLocationDto, Errors>, GetLocationByIdQuery> queryHandler,
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
     {
-        return Result.Success<GetLocationDto, Error>(
-            new GetLocationDto("LocationName"));
+        var query = new GetLocationByIdQuery(id);
+        return await queryHandler.Handle(query, cancellationToken);
     }
 
     [HttpGet]
@@ -50,7 +54,7 @@ public sealed class LocationsController : ControllerBase
         var command = new UpdateLocationCommand(
             locationId,
             request.Name,
-            request.Address,
+            request.LocationAddress,
             request.Timezone);
 
         return await commandHandler.Handle(

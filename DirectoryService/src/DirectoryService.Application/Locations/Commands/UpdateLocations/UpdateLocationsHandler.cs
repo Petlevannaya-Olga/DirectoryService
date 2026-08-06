@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 
-namespace DirectoryService.Application.Locations.UpdateLocations;
+namespace DirectoryService.Application.Locations.Commands.UpdateLocations;
 
 public sealed class UpdateLocationsHandler(
     IDepartmentsRepository departmentsRepository,

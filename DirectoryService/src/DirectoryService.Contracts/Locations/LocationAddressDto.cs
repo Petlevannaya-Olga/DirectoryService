@@ -1,6 +1,6 @@
 ﻿namespace DirectoryService.Contracts.Locations;
 
-public record AddressDto(
+public record LocationAddressDto(
     string PostalCode,
     string Region,
     string City,

@@ -11,8 +11,17 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("Database")));
+        var connectionString =
+            configuration.GetConnectionString("Database")
+            ?? throw new InvalidOperationException(
+                "Строка подключения 'Database' не найдена.");
+
+        services.AddDbContext<ApplicationDbContext>(
+            options => options.UseNpgsql(connectionString));
+
+        services.AddScoped<IReadDbContext>(
+            serviceProvider =>
+                serviceProvider.GetRequiredService<ApplicationDbContext>());
 
         services.AddScoped<ILocationsRepository, LocationsRepository>();
         services.AddScoped<IPositionsRepository, PositionsRepository>();

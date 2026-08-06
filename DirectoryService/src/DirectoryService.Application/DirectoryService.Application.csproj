@@ -9,10 +9,16 @@
     <ItemGroup>
       <PackageReference Include="FluentValidation"  />
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
       <PackageReference Include="Scrutor" />
       <PackageReference Include="CSharpFunctionalExtensions" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Locations\Commands\" />
+      <Folder Include="Locations\Queries\" />
     </ItemGroup>
 
 </Project>

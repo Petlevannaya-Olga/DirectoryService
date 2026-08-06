@@ -3,7 +3,7 @@ using FluentValidation;
 using Primitives;
 using Primitives.Extensions;
 
-namespace DirectoryService.Application.Locations.UpdateLocations;
+namespace DirectoryService.Application.Locations.Commands.UpdateLocations;
 
 public class UpdateLocationsValidator : AbstractValidator<UpdateLocations.UpdateLocationsCommand>
 {

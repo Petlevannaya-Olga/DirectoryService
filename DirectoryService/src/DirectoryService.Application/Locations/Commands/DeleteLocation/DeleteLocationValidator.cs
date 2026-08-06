@@ -3,7 +3,7 @@ using FluentValidation;
 using Primitives;
 using Primitives.Extensions;
 
-namespace DirectoryService.Application.Locations.DeleteLocation;
+namespace DirectoryService.Application.Locations.Commands.DeleteLocation;
 
 public class DeleteLocationValidator: AbstractValidator<DeleteLocationCommand>
 {

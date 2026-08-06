@@ -1,5 +1,5 @@
 ﻿using Primitives.Abstractions;
 
-namespace DirectoryService.Application.Locations.UpdateLocations;
+namespace DirectoryService.Application.Locations.Commands.UpdateLocations;
 
 public sealed record UpdateLocationsCommand(Guid DepartmentId, IEnumerable<Guid> LocationIds) : IValidation;
