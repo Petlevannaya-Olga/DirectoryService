@@ -26,6 +26,7 @@ public static class DependencyInjection
             .WithScopedLifetime());
 
         services.TryDecorate(typeof(ICommandHandler<,>), typeof(CommandValidationDecorator<,>));
+        services.TryDecorate(typeof(IQueryHandler<,>), typeof(QueryValidationDecorator<,>));
 
         return services;
     }

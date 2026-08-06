@@ -159,8 +159,7 @@ public sealed class DepartmentsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<
-        EndpointResult<PagedResult<DepartmentSummaryDto>>> Get(
+    public async Task<EndpointResult<PagedResult<DepartmentSummaryDto>>> Get(
         [FromServices] IQueryHandler<PagedResult<DepartmentSummaryDto>, GetDepartmentsQuery> queryHandler,
         [FromQuery] GetDepartmentsDto request,
         CancellationToken cancellationToken)

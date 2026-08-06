@@ -98,7 +98,7 @@ public sealed class GetDepartmentsHandler(
         return departments.Where(
             department =>
                 EF.Functions.Like(
-                    department.Name.Value.ToLower(CultureInfo.CurrentCulture),
+                    department.Name.Value.ToLower(),
                     searchPattern,
                     @"\"));
     }
