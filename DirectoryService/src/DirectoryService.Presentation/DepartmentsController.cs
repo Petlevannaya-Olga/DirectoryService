@@ -1,7 +1,9 @@
-﻿using DirectoryService.Application.Departments.AddLocation;
+﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Departments.AddLocation;
 using DirectoryService.Application.Departments.AddPosition;
 using DirectoryService.Application.Departments.CreateDepartment;
 using DirectoryService.Application.Departments.DeleteDepartment;
+using DirectoryService.Application.Departments.Queries.GetDepartmentById;
 using DirectoryService.Application.Departments.RemoveLocation;
 using DirectoryService.Application.Departments.RemovePosition;
 using DirectoryService.Application.Departments.UpdateDepartment;
@@ -32,11 +34,14 @@ public sealed class DepartmentsController : ControllerBase
             cancellationToken);
     }
 
-    [HttpGet("{departmentId:guid}")]
-    public EndpointResult<GetDepartmentDto> GetById([FromRoute] Guid departmentId)
+    [HttpGet("{id:guid}")]
+    public async Task<EndpointResult<GetDepartmentDto>> GetById(
+        [FromServices] IQueryHandler<Result<GetDepartmentDto, Errors>, GetDepartmentByIdQuery> queryHandler,
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
     {
-        return Result.Success<GetDepartmentDto, Error>(
-            new GetDepartmentDto("DepartmentName"));
+        var query = new GetDepartmentByIdQuery(id);
+        return await queryHandler.Handle(query, cancellationToken);
     }
 
     [HttpGet]
