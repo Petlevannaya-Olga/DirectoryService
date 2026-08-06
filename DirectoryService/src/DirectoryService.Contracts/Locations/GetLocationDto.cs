@@ -1,3 +1,10 @@
 ﻿namespace DirectoryService.Contracts.Locations;
 
-public record GetLocationDto(string Name);
+public sealed record GetLocationDto(
+    Guid Id,
+    string Name,
+    LocationAddressDto Address,
+    string Timezone,
+    bool IsActive,
+    DateTime CreatedAt,
+    DateTime UpdatedAt);

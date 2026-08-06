@@ -49,7 +49,7 @@ public sealed class Address(
     /// </summary>
     /// <param name="dto">Address dto</param>
     /// <returns>Новый адрес</returns>
-    public static Result<Address, Error> Create(AddressDto dto)
+    public static Result<Address, Error> Create(LocationAddressDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.PostalCode))
         {

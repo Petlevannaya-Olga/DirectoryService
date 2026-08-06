@@ -2,5 +2,5 @@
 
 public record CreateLocationDto(
     string Name,
-    AddressDto Address,
+    LocationAddressDto LocationAddress,
     string Timezone);

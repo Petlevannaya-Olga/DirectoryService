@@ -51,5 +51,8 @@
     <PackageVersion Include="TimeZoneConverter" Version="7.2.0" />
 
     <PackageVersion Include="DotNetEnv" Version="3.2.0" />
+
+    <PackageVersion Include="Dapper" Version="2.1.79" />
+    <PackageVersion Include="Npgsql" Version="10.0.3" />
   </ItemGroup>
 </Project>

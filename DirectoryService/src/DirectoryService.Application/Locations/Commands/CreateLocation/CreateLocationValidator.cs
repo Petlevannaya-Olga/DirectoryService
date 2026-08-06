@@ -2,7 +2,7 @@
 using FluentValidation;
 using Primitives.Extensions;
 
-namespace DirectoryService.Application.Locations.CreateLocation;
+namespace DirectoryService.Application.Locations.Commands.CreateLocation;
 
 public sealed class CreateLocationValidator : AbstractValidator<CreateLocationCommand>
 {
@@ -14,7 +14,7 @@ public sealed class CreateLocationValidator : AbstractValidator<CreateLocationCo
         RuleFor(x => x.Dto.Timezone)
             .MustBeValueObject(Timezone.Create);
 
-        RuleFor(x => x.Dto.Address)
+        RuleFor(x => x.Dto.LocationAddress)
             .MustBeValueObject(Address.Create);
     }
 }

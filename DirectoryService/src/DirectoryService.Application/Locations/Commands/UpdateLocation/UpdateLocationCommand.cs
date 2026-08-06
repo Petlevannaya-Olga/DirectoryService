@@ -1,10 +1,10 @@
 ﻿using DirectoryService.Contracts.Locations;
 using Primitives.Abstractions;
 
-namespace DirectoryService.Application.Locations.UpdateLocation;
+namespace DirectoryService.Application.Locations.Commands.UpdateLocation;
 
 public sealed record UpdateLocationCommand(
     Guid Id,
     string Name,
-    AddressDto Address,
+    LocationAddressDto LocationAddress,
     string Timezone) : IValidation;

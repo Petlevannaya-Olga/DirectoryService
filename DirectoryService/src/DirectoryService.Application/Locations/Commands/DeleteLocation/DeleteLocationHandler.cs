@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 
-namespace DirectoryService.Application.Locations.DeleteLocation;
+namespace DirectoryService.Application.Locations.Commands.DeleteLocation;
 
 public sealed class DeleteLocationHandler(
     ILocationsRepository locationsRepository,

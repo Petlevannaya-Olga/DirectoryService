@@ -1,5 +1,5 @@
 ﻿using Primitives.Abstractions;
 
-namespace DirectoryService.Application.Locations.DeleteLocation;
+namespace DirectoryService.Application.Locations.Commands.DeleteLocation;
 
 public sealed record DeleteLocationCommand(Guid LocationId) : IValidation;

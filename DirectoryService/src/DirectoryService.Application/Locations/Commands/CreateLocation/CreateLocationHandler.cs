@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Primitives;
 using Primitives.Abstractions;
 
-namespace DirectoryService.Application.Locations.CreateLocation;
+namespace DirectoryService.Application.Locations.Commands.CreateLocation;
 
 public sealed class CreateLocationHandler(
     ILocationsRepository repository,
@@ -26,7 +26,7 @@ public sealed class CreateLocationHandler(
         }
 
         var addressResult =
-            Address.Create(command.Dto.Address);
+            Address.Create(command.Dto.LocationAddress);
 
         if (addressResult.IsFailure)
         {
