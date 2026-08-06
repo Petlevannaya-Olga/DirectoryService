@@ -2,4 +2,4 @@
 
 namespace DirectoryService.Application.Departments.DeleteDepartment;
 
-public sealed record DeleteDepartmentCommand(Guid DepartmentId) : IValidation;
+public sealed record DeleteDepartmentCommand(Guid DepartmentId) : ICommandValidation;

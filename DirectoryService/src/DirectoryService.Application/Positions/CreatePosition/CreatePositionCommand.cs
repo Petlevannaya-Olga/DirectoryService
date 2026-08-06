@@ -4,4 +4,4 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Positions.CreatePosition;
 
-public record CreatePositionCommand(CreatePositionDto Dto) : IValidation;
+public record CreatePositionCommand(CreatePositionDto Dto) : ICommandValidation;

@@ -4,4 +4,4 @@ namespace DirectoryService.Application.Departments.RemovePosition;
 
 public sealed record RemovePositionCommand(
     Guid DepartmentId,
-    Guid PositionId) : IValidation;
+    Guid PositionId) : ICommandValidation;

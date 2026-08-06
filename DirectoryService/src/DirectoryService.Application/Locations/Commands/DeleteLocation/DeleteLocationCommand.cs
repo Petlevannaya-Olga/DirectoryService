@@ -2,4 +2,4 @@
 
 namespace DirectoryService.Application.Locations.Commands.DeleteLocation;
 
-public sealed record DeleteLocationCommand(Guid LocationId) : IValidation;
+public sealed record DeleteLocationCommand(Guid LocationId) : ICommandValidation;

@@ -7,4 +7,4 @@ public sealed record UpdateLocationCommand(
     Guid Id,
     string Name,
     LocationAddressDto LocationAddress,
-    string Timezone) : IValidation;
+    string Timezone) : ICommandValidation;

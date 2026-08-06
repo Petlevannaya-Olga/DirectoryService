@@ -10,9 +10,7 @@ namespace DirectoryService.Application.Departments.Queries.GetDepartmentById;
 
 public sealed class GetDepartmentByIdHandler(
     IReadDbContext readDbContext)
-    : IQueryHandler<
-        Result<GetDepartmentDto, Errors>,
-        GetDepartmentByIdQuery>
+    : IQueryHandler<GetDepartmentDto, GetDepartmentByIdQuery>
 {
     public async Task<Result<GetDepartmentDto, Errors>> Handle(
         GetDepartmentByIdQuery query,

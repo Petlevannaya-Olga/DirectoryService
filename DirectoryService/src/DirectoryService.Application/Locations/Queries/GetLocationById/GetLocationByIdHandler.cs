@@ -11,7 +11,7 @@ namespace DirectoryService.Application.Locations.Queries.GetLocationById;
 public sealed class GetLocationByIdHandler(
     IReadDbContext readDbContext)
     : IQueryHandler<
-        Result<GetLocationDto, Errors>,
+        GetLocationDto,
         GetLocationByIdQuery>
 {
     public async Task<Result<GetLocationDto, Errors>> Handle(

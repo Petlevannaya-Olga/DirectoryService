@@ -3,4 +3,4 @@ using Primitives.Abstractions;
 
 namespace DirectoryService.Application.Departments.CreateDepartment;
 
-public record CreateDepartmentCommand(CreateDepartmentDto Dto) : IValidation;
+public record CreateDepartmentCommand(CreateDepartmentDto Dto) : ICommandValidation;

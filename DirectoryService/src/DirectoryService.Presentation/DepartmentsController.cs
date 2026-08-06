@@ -4,10 +4,12 @@ using DirectoryService.Application.Departments.AddPosition;
 using DirectoryService.Application.Departments.CreateDepartment;
 using DirectoryService.Application.Departments.DeleteDepartment;
 using DirectoryService.Application.Departments.Queries.GetDepartmentById;
+using DirectoryService.Application.Departments.Queries.GetDepartments;
 using DirectoryService.Application.Departments.RemoveLocation;
 using DirectoryService.Application.Departments.RemovePosition;
 using DirectoryService.Application.Departments.UpdateDepartment;
 using DirectoryService.Application.Locations.Commands.UpdateLocations;
+using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +38,7 @@ public sealed class DepartmentsController : ControllerBase
 
     [HttpGet("{id:guid}")]
     public async Task<EndpointResult<GetDepartmentDto>> GetById(
-        [FromServices] IQueryHandler<Result<GetDepartmentDto, Errors>, GetDepartmentByIdQuery> queryHandler,
+        [FromServices] IQueryHandler<GetDepartmentDto, GetDepartmentByIdQuery> queryHandler,
         [FromRoute] Guid id,
         CancellationToken cancellationToken)
     {
@@ -133,7 +135,7 @@ public sealed class DepartmentsController : ControllerBase
             command,
             cancellationToken);
     }
-    
+
     [HttpPost("{departmentId:guid}/positions/{positionId:guid}")]
     public async Task<EndpointResult<Guid>> AddPosition(
         [FromServices] ICommandHandler<Guid, AddPositionCommand> commandHandler,
@@ -144,7 +146,7 @@ public sealed class DepartmentsController : ControllerBase
         var command = new AddPositionCommand(departmentId, positionId);
         return await commandHandler.Handle(command, cancellationToken);
     }
-    
+
     [HttpDelete("{departmentId:guid}/positions/{positionId:guid}")]
     public async Task<EndpointResult> RemovePosition(
         [FromServices] ICommandHandler<RemovePositionCommand> commandHandler,
@@ -154,5 +156,22 @@ public sealed class DepartmentsController : ControllerBase
     {
         var command = new RemovePositionCommand(departmentId, positionId);
         return await commandHandler.Handle(command, cancellationToken);
+    }
+
+    [HttpGet]
+    public async Task<
+        EndpointResult<PagedResult<DepartmentSummaryDto>>> Get(
+        [FromServices] IQueryHandler<PagedResult<DepartmentSummaryDto>, GetDepartmentsQuery> queryHandler,
+        [FromQuery] GetDepartmentsDto request,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetDepartmentsQuery(
+            request.Search,
+            request.SortBy,
+            request.SortDirection,
+            request.Page,
+            request.PageSize);
+
+        return await queryHandler.Handle(query, cancellationToken);
     }
 }
