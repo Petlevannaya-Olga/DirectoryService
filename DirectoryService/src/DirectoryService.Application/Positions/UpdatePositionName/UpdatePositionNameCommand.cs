@@ -5,4 +5,4 @@ namespace DirectoryService.Application.Positions.UpdatePositionName;
 
 public sealed record UpdatePositionNameCommand(
     Guid PositionId,
-    UpdatePositionNameDto Dto) : IValidation;
+    UpdatePositionNameDto Dto) : ICommandValidation;

@@ -4,4 +4,4 @@ namespace DirectoryService.Application.Departments.UpdateDepartment;
 
 public sealed record UpdateDepartmentCommand(
     Guid DepartmentId,
-    string Name) : IValidation;
+    string Name) : ICommandValidation;

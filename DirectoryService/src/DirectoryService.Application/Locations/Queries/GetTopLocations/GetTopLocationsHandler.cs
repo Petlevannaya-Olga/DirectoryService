@@ -11,9 +11,7 @@ namespace DirectoryService.Application.Locations.Queries.GetTopLocations;
 public sealed class GetTopLocationsHandler(
     IReadDbConnectionFactory connectionFactory,
     ILogger<GetTopLocationsHandler> logger)
-    : IQueryHandler<
-        Result<TopLocationDto[], Errors>,
-        GetTopLocationsQuery>
+    : IQueryHandler<TopLocationDto[], GetTopLocationsQuery>
 {
     // language=PostgreSQL
     private const string SQL =

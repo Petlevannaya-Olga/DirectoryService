@@ -31,7 +31,7 @@ public sealed class LocationsController : ControllerBase
 
     [HttpGet("{id:guid}")]
     public async Task<EndpointResult<GetLocationDto>> GetById(
-        [FromServices] IQueryHandler<Result<GetLocationDto, Errors>, GetLocationByIdQuery> queryHandler,
+        [FromServices] IQueryHandler<GetLocationDto, GetLocationByIdQuery> queryHandler,
         [FromRoute] Guid id,
         CancellationToken cancellationToken)
     {
@@ -75,7 +75,7 @@ public sealed class LocationsController : ControllerBase
 
     [HttpGet("top")]
     public async Task<EndpointResult<TopLocationDto[]>> GetTop(
-        [FromServices] IQueryHandler<Result<TopLocationDto[], Errors>, GetTopLocationsQuery> queryHandler,
+        [FromServices] IQueryHandler<TopLocationDto[], GetTopLocationsQuery> queryHandler,
         CancellationToken cancellationToken)
     {
         var query = new GetTopLocationsQuery();

@@ -4,4 +4,4 @@ namespace DirectoryService.Application.Departments.AddPosition;
 
 public sealed record AddPositionCommand(
     Guid DepartmentId,
-    Guid PositionId) : IValidation;
+    Guid PositionId) : ICommandValidation;

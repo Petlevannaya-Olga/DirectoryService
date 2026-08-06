@@ -2,4 +2,4 @@
 
 namespace DirectoryService.Application.Positions.DeletePosition;
 
-public sealed record DeletePositionCommand(Guid PositionId) : IValidation;
+public sealed record DeletePositionCommand(Guid PositionId) : ICommandValidation;

@@ -25,7 +25,9 @@ public static class DependencyInjection
             .AsSelfWithInterfaces()
             .WithScopedLifetime());
 
-        services.TryDecorate(typeof(ICommandHandler<,>), typeof(ValidationDecorator<,>));
+        services.AddScoped(typeof(ValidationExecutor<>));
+        services.TryDecorate(typeof(ICommandHandler<,>), typeof(CommandValidationDecorator<,>));
+        services.TryDecorate(typeof(IQueryHandler<,>), typeof(QueryValidationDecorator<,>));
 
         return services;
     }
